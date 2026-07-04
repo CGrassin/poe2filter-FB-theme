@@ -93,6 +93,7 @@
 
   /* toggles */
   .opts{display:grid;gap:10px}
+  .opts + .opts{margin-top:10px}
   .opt{display:flex;align-items:center;gap:14px;padding:13px 15px;border-radius:10px;
     background:rgba(0,0,0,.2);border:1px solid var(--edge-soft)}
   .switch{position:relative;flex:none;width:42px;height:24px}
@@ -185,9 +186,10 @@
     <div class="opts" id="groups"></div>
 
     <details class="adv">
-      <summary>Advanced — which parts of the look to copy</summary>
+      <summary>Advanced settings</summary>
       <p class="step-sub adv-sub">Anything you leave off keeps your poe2filter setting.</p>
       <div class="opts" id="opts"></div>
+      <div class="opts" id="align"></div>
     </details>
   </div>
 
@@ -245,6 +247,10 @@ const GEM={
   F:HIDE,
 };
 const LADDERS={economy:ECONOMY,fragment:FRAGMENT,gem:GEM};
+// Economy tier alignment: poe2filter's tiers run one step brighter than FilterBlade's,
+// so shift currency down one rung, skipping FilterBlade's B (near-identical to A).
+// Result: poe2filter D -> FilterBlade E. Only applied when the align flag is on.
+const ECON_ALIGN={S:"S",A:"A",B:"C",C:"D",D:"E",E:"F",F:"F"};
 const SECTION_PALETTE={
   "Currency":"economy","Abyssal Eyes":"economy","Alloys":"economy","Ancient Augments":"economy",
   "Ancient Bones":"economy","Ancient Runes":"economy","Breach":"economy","Delirium":"economy",
@@ -289,7 +295,7 @@ function applyStyle(body,indent,style,facets){
   }
   return kept.filter((_,i)=>!remove.has(i));
 }
-function process(text,facets,groups){
+function process(text,facets,groups,alignEcon){
   const lines=text.split("\n"),out=[],log=[];let section=null,i=0,themed=0,total=0;const n=lines.length;
   while(i<n){
     const ln=lines[i];
@@ -310,7 +316,8 @@ function process(text,facets,groups){
       else log.push(name+" ("+section+")");
     }
     if(palette&&rung&&groups.has(palette)){
-      let style;if(palette==="waystone")style=WAYSTONE[rung];else if(palette==="relic")style=RELIC[rung];else style=resolve(LADDERS[palette],rung);
+      let r=rung;if(alignEcon&&palette==="economy")r=ECON_ALIGN[r]||r;
+      let style;if(palette==="waystone")style=WAYSTONE[r];else if(palette==="relic")style=RELIC[r];else style=resolve(LADDERS[palette],r);
       const nb=applyStyle(body,indent,style,facets);
       out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;
     }
@@ -381,6 +388,19 @@ document.querySelectorAll('input[data-group]').forEach(cb=>{
   });
 });
 
+// currency tier alignment (default on)
+let alignEcon=true;
+$("#align").innerHTML=`
+  <label class="opt">
+    <span class="switch">
+      <input type="checkbox" id="alignCb" checked aria-label="Align currency tiers to FilterBlade">
+      <span class="track"></span><span class="thumb"></span>
+    </span>
+    <span class="lab"><span class="t">Align currency tiers</span></span>
+    <span class="info" tabindex="0" role="note" aria-label="About aligning currency tiers">?<span class="tip">Poe2filter's currency tiers sit one step brighter than FilterBlade's. This shifts currency down by one rung (skipping FilterBlade's B color). Only affects the currency/economy category. Turn off for a straight 1:1 tier match.</span></span>
+  </label>`;
+$("#alignCb").addEventListener("change",e=>{alignEcon=e.target.checked;renderPreview();});
+
 /* ---- static palette preview (just the chips) ---- */
 function rgba(s){const p=s.split(/\s+/).map(Number);const a=p.length>3?p[3]/255:1;return `rgba(${p[0]},${p[1]},${p[2]},${a})`;}
 function chip(style,label){
@@ -402,7 +422,7 @@ function renderPreview(){
   for(const g of PV){
     if(!groupState.has(g.key))continue;
     any=true;
-    const chips=g.pal?TIERS.map(t=>[t+" Tier",resolve(LADDERS[g.pal],t)]):g.chips;
+    const chips=g.pal?TIERS.map(t=>{const rr=(alignEcon&&g.pal==="economy")?(ECON_ALIGN[t]||t):t;return [t+" Tier",resolve(LADDERS[g.pal],rr)];}):g.chips;
     host.appendChild(row(g.label,chips));
   }
   if(!any){const p=document.createElement("p");p.className="pv-empty";p.textContent="Nothing selected — turn on a category above to preview it.";host.appendChild(p);}
@@ -440,7 +460,7 @@ go.addEventListener("click",()=>{
   if(loadedText==null)return;
   if(groupState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>No categories selected.</b> Turn on at least one category to repaint.";return;}
   if(facetState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>Nothing to copy.</b> Open Advanced and turn on at least one part of the look.";return;}
-  const res=process(loadedText,facetState,groupState);
+  const res=process(loadedText,facetState,groupState,alignEcon);
   const blob=new Blob([res.text],{type:"text/plain"});
   const url=URL.createObjectURL(blob);
   const base=(loadedName||"filter").replace(/\.(filter|txt)$/i,"");
@@ -449,7 +469,7 @@ go.addEventListener("click",()=>{
   const facetList=[...facetState].join(", ");
   status.className="status ok";
   status.innerHTML=`Done — repainted <b>${res.themed}</b> of ${res.total} blocks. Downloaded as <b>${base}-filterblade.filter</b>.`
-    +`<span class="note">Applied: ${facetList}.`
+    +`<span class="note">Applied: ${facetList}.${alignEcon?" Currency tiers aligned to FilterBlade (B skipped).":""}`
     +(res.log.length?` ${res.log.length} block(s) had no tier and were left untouched.`:"")+`</span>`;
 });
 </script>
