@@ -312,7 +312,9 @@ function process(text,facets,groups,alignEcon){
     else if(section in SECTION_PALETTE){
       palette=SECTION_PALETTE[section];
       const tm=TIER_RE.exec(name);
-      if(tm){rung=tm[1];if(name.startsWith("Large Stacks of")||bid.endsWith("-large-stacks"))rung=bump(rung,1);}
+      if(tm){rung=tm[1];
+        if(name.startsWith("Large Stacks of")||bid.endsWith("-large-stacks"))rung=bump(rung,2);
+        else if(name.startsWith("Small Stacks of")||bid.endsWith("-small-stacks"))rung=bump(rung,1);}
       else log.push(name+" ("+section+")");
     }
     if(palette&&rung&&groups.has(palette)){
