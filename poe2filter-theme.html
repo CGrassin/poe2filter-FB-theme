@@ -266,12 +266,18 @@ const SPECIAL={
   "waystones-rare":["waystone","RARE"],"waystones-other":["waystone","OTHER"],
   "trial-gold-key":["fragment","A"],"trial-silver-key":["fragment","B"],"trial-bronze-key":["fragment","C"],
   "trial-relics":["relic","ANY"],
+  "chance-bases-searching":["chance","SEARCHING"],"chance-bases-potential":["chance","POTENTIAL"],
 };
 const WAYSTONE={
   RARE: {font:"42",text:"0 0 0 255",      bg:"235 235 235 255",icon:"1 Red Square",  beam:"Yellow",    sound:"5 300"},
   OTHER:{font:"40",text:"255 255 255 255",bg:"20 20 0 255",    icon:"1 White Square",beam:"White Temp",sound:"4 300"},
 };
 const RELIC={ANY:{font:"40",text:"0 240 190 255",border:null,bg:null,icon:null,beam:"Blue Temp",sound:"3 300"}};
+const CHANCE={
+  // White (Normal) bases worth using an Orb of Chance on. FilterBlade's chancing look.
+  SEARCHING:{font:"45",text:"125 255 89 255",border:"125 255 89 255",bg:"0 50 0",   icon:"0 Red Diamond",  beam:"Red",       sound:"1 300"},
+  POTENTIAL:{font:"40",text:"125 255 89 255",border:"0 200 95 255",bg:null,          icon:"1 Green Diamond",beam:"Green Temp",sound:"3 300"},
+};
 const TIER_ORDER=["S","A","B","C","D","E","F"];
 const FACET_KEYS={text:"color",border:"color",bg:"color",icon:"icon",font:"font",beam:"beam",sound:"sound"};
 const KEYWORD={text:"SetTextColor",border:"SetBorderColor",bg:"SetBackgroundColor",icon:"MinimapIcon",font:"SetFontSize",beam:"PlayEffect",sound:"PlayAlertSound"};
@@ -319,7 +325,7 @@ function process(text,facets,groups,alignEcon){
     }
     if(palette&&rung&&groups.has(palette)){
       let r=rung;if(alignEcon&&palette==="economy")r=ECON_ALIGN[r]||r;
-      let style;if(palette==="waystone")style=WAYSTONE[r];else if(palette==="relic")style=RELIC[r];else style=resolve(LADDERS[palette],r);
+      let style;if(palette==="waystone")style=WAYSTONE[r];else if(palette==="relic")style=RELIC[r];else if(palette==="chance")style=CHANCE[r];else style=resolve(LADDERS[palette],r);
       const nb=applyStyle(body,indent,style,facets);
       out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;
     }
@@ -350,6 +356,7 @@ const PV=[
   {key:"gem",     label:"Uncut gems", pal:"gem"},
   {key:"waystone",label:"Waystones", chips:[["Rare",WAYSTONE.RARE],["Other",WAYSTONE.OTHER]]},
   {key:"relic",   label:"Trial relics", chips:[["Relic",RELIC.ANY]]},
+  {key:"chance",  label:"Chance bases (white bases worth chancing)", chips:[["Searching",CHANCE.SEARCHING],["Potential",CHANCE.POTENTIAL]]},
 ];
 const groupState=new Set(PV.map(g=>g.key)); // all on
 
