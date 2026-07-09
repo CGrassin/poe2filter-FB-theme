@@ -24,12 +24,14 @@
     --shadow:0 18px 50px -20px rgba(0,0,0,.8);
   }
   *{box-sizing:border-box}
+  html{background:var(--bg2)}
   html,body{margin:0}
   body{
     background:
-      radial-gradient(120% 80% at 50% -10%, #221a0f 0%, var(--bg) 42%, var(--bg2) 100%) fixed;
+      radial-gradient(120% 80% at 50% -10%, #221a0f 0%, var(--bg) 42%, var(--bg2) 100%) no-repeat;
+    background-color:var(--bg2);
     color:var(--ink); font-family:"Spectral",Georgia,serif; line-height:1.55;
-    -webkit-font-smoothing:antialiased; min-height:100vh; padding:48px 20px 80px;
+    -webkit-font-smoothing:antialiased; min-height:100vh; min-height:100dvh; padding:48px 20px 80px;
   }
   .wrap{max-width:780px;margin:0 auto}
   .eyebrow{font-family:"Cinzel",serif;letter-spacing:.32em;text-transform:uppercase;
@@ -156,8 +158,8 @@
 
   @media (max-width:520px){
     .card{padding:20px 16px}
-    .info .tip{right:auto;left:-6px}
-    .info .tip::after{right:auto;left:9px}
+    .info .tip{right:-6px;left:auto;width:min(248px,calc(100vw - 64px))}
+    .info .tip::after{right:9px;left:auto}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
