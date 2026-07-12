@@ -214,7 +214,7 @@
     <div id="preview"></div>
   </div>
 
-  <p class="foot">Runs in your browser, your filter is not uploaded. Last updated on 09.07.2026.
+  <p class="foot">Runs in your browser, your filter is not uploaded. Last updated on 12.07.2026.
     Made by <a href="https://charlesgrassin.com" target="_blank" rel="noopener">Charles Grassin</a>.</p>
   <p class="foot">Built on the work of <a href="https://poe2filter.com" target="_blank" rel="noopener">poe2filter</a> and <a href="https://www.filterblade.xyz" target="_blank" rel="noopener">FilterBlade</a> (by <a href="https://github.com/NeverSinkDev" target="_blank" rel="noopener">NeverSink</a>); huge thanks to their developers.</p>
 </div>
@@ -251,9 +251,10 @@ const GEM={
 };
 const LADDERS={economy:ECONOMY,fragment:FRAGMENT,gem:GEM};
 // Economy tier alignment: poe2filter's tiers run one step brighter than FilterBlade's,
-// so shift currency down one rung, skipping FilterBlade's B (near-identical to A).
+// so shift currency down one rung from C onward. B keeps FilterBlade's B color, since
+// the shifted B (C color) reads almost identically to the shifted C (D color).
 // Result: poe2filter D -> FilterBlade E. Only applied when the align flag is on.
-const ECON_ALIGN={S:"S",A:"A",B:"C",C:"D",D:"E",E:"F",F:"F"};
+const ECON_ALIGN={S:"S",A:"A",B:"B",C:"D",D:"E",E:"F",F:"F"};
 const SECTION_PALETTE={
   "Currency":"economy","Abyssal Eyes":"economy","Alloys":"economy","Ancient Augments":"economy",
   "Ancient Bones":"economy","Ancient Runes":"economy","Breach":"economy","Delirium":"economy",
@@ -277,7 +278,6 @@ const WAYSTONE={
 };
 const RELIC={ANY:{font:"40",text:"0 240 190 255",border:null,bg:null,icon:null,beam:"Blue Temp",sound:"3 300"}};
 const CHANCE={
-  // White (Normal) bases worth using an Orb of Chance on. FilterBlade's chancing look.
   SEARCHING:{font:"45",text:"125 255 89 255",border:"125 255 89 255",bg:"0 50 0",   icon:"0 Red Diamond",  beam:"Red",       sound:"1 300"},
   POTENTIAL:{font:"40",text:"125 255 89 255",border:"0 200 95 255",bg:null,          icon:"1 Green Diamond",beam:"Green Temp",sound:"3 300"},
 };
@@ -409,7 +409,7 @@ $("#align").innerHTML=`
       <span class="track"></span><span class="thumb"></span>
     </span>
     <span class="lab"><span class="t">Align currency tiers</span></span>
-    <button type="button" class="info" aria-label="About aligning currency tiers">?<span class="tip">Poe2filter's currency tiers sit one step brighter than FilterBlade's. This shifts currency down by one rung (skipping FilterBlade's B color). Only affects the currency/economy category. Turn off for a straight 1:1 tier match.</span></button>
+    <button type="button" class="info" aria-label="About aligning currency tiers">?<span class="tip">Poe2filter's currency tiers sit one step brighter than FilterBlade's. This shifts currency down by one rung from C onward (B keeps its own color, and FilterBlade's C color is skipped). Only affects the currency/economy category. Turn off for a straight 1:1 tier match.</span></button>
   </label>`;
 $("#alignCb").addEventListener("change",e=>{alignEcon=e.target.checked;renderPreview();});
 
@@ -481,7 +481,7 @@ go.addEventListener("click",()=>{
   const facetList=[...facetState].join(", ");
   status.className="status ok";
   status.innerHTML=`Done — repainted <b>${res.themed}</b> of ${res.total} blocks. Downloaded as <b>${base}-filterblade.filter</b>.`
-    +`<span class="note">Applied: ${facetList}.${alignEcon?" Currency tiers aligned to FilterBlade (B skipped).":""}`
+    +`<span class="note">Applied: ${facetList}.${alignEcon?" Currency tiers aligned to FilterBlade (C skipped).":""}`
     +(res.log.length?` ${res.log.length} block(s) had no tier and were left untouched.`:"")+`</span>`;
 });
 </script>
