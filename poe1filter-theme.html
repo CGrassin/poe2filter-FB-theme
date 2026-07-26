@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Repaint a poe1filter.com loot filter with FilterBlade's colours. Runs entirely in your browser and changes only the look, never the tiering or what shows and hides.">
+<meta name="author" content="Charles Grassin">
+<meta name="theme-color" content="#15120c">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PoE1 Filter → FilterBlade Theme">
+<meta property="og:description" content="Repaint a poe1filter.com loot filter with FilterBlade's colours. Runs entirely in your browser — it changes only the look, never the tiering or what shows and hides.">
+<title>PoE1 Filter → FilterBlade Theme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15120c; --bg2:#0d0b07; --panel:#1c1710; --panel-2:#221b12;
+    --edge:#3a3120; --edge-soft:#2a2317;
+    --gold:#c9a44a; --gold-bright:#e7c469; --gold-dim:#7e6a31;
+    --ink:#dccca4; --ink-dim:#9b8c69; --ink-faint:#6f6347;
+    --magenta:#b400ff; --good:#46c463; --bad:#e2563b;
+    --shadow:0 18px 50px -20px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg2);overflow-x:clip}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, #221a0f 0%, var(--bg) 42%, var(--bg2) 100%) no-repeat;
+    background-color:var(--bg2);
+    color:var(--ink); font-family:"Spectral",Georgia,serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased; min-height:100vh; min-height:100dvh; overflow-x:clip; padding:48px 20px 80px;
+  }
+  .wrap{max-width:780px;margin:0 auto}
+  .eyebrow{font-family:"Cinzel",serif;letter-spacing:.32em;text-transform:uppercase;
+    font-size:11px;color:var(--gold-dim);margin:0 0 14px}
+  h1{font-family:"Cinzel",serif;font-weight:700;font-size:clamp(30px,6vw,46px);
+    line-height:1.05;margin:0 0 14px;color:var(--ink);
+    text-shadow:0 1px 0 #000, 0 0 28px rgba(201,164,74,.12)}
+  h1 .accent{color:var(--gold-bright)}
+  .lede{font-size:17px;color:var(--ink-dim);margin:0 0 38px}
+  .lede b{color:var(--ink);font-weight:500}
+  .lede a,.foot a{color:var(--gold);text-decoration:none;
+    border-bottom:1px solid rgba(201,164,74,.4);transition:color .15s,border-color .15s}
+  .lede a:hover,.foot a:hover{color:var(--gold-bright);border-color:var(--gold-bright)}
+  .lede a:focus-visible,.foot a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:2px}
+
+  .card{background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--edge); border-radius:14px; box-shadow:var(--shadow);
+    padding:26px 26px 24px; margin-bottom:22px; position:relative}
+  .step{display:flex;align-items:baseline;gap:12px;margin:0 0 18px}
+  .step .num{font-family:"Cinzel",serif;font-size:13px;color:var(--gold);
+    border:1px solid var(--gold-dim);border-radius:50%;width:26px;height:26px;
+    display:grid;place-items:center;flex:none;letter-spacing:0}
+  .step h2{font-family:"Cinzel",serif;font-weight:600;font-size:16px;margin:0;
+    letter-spacing:.04em;color:var(--ink)}
+  .step-sub{color:var(--ink-dim);font-size:13.5px;line-height:1.55;margin:-8px 0 17px}
+  .path{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13px;
+    color:var(--gold-bright);background:rgba(0,0,0,.28);border:1px solid var(--edge-soft);
+    border-radius:8px;padding:10px 13px;margin:0 0 14px;overflow-x:auto;white-space:nowrap;user-select:all}
+
+  /* advanced collapsible */
+  .adv{margin-top:18px;border-top:1px solid var(--edge-soft);padding-top:4px}
+  .adv summary{cursor:pointer;list-style:none;font-family:"Cinzel",serif;font-size:12.5px;
+    letter-spacing:.06em;color:var(--gold-dim);padding:12px 0 12px;display:flex;align-items:center;gap:9px}
+  .adv summary::-webkit-details-marker{display:none}
+  .adv summary::before{content:"▸";display:inline-block;color:var(--gold-dim);transition:transform .15s}
+  .adv[open] summary::before{transform:rotate(90deg)}
+  .adv summary:hover{color:var(--gold)}
+  .adv summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+  .adv-sub{margin:0 0 14px!important}
+  .pv-empty{color:var(--ink-faint);font-size:13.5px;font-style:italic;margin:4px 0 0}
+
+  /* drop zone */
+  .drop{border:1.5px dashed var(--edge);border-radius:11px;padding:30px 20px;
+    text-align:center;cursor:pointer;transition:border-color .18s,background .18s;
+    background:rgba(0,0,0,.18)}
+  .drop:hover,.drop.over{border-color:var(--gold);background:rgba(201,164,74,.06)}
+  .drop:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  .drop .dz-main{font-size:16px;color:var(--ink)}
+  .drop .dz-sub{font-size:13px;color:var(--ink-faint);margin-top:6px}
+  .drop.loaded{border-style:solid;border-color:var(--edge-soft);text-align:left;
+    display:flex;align-items:center;gap:14px}
+  .file-glyph{font-family:"Cinzel",serif;color:var(--gold);font-size:20px;flex:none;
+    width:42px;height:42px;border:1px solid var(--gold-dim);border-radius:8px;
+    display:grid;place-items:center}
+  .file-meta{flex:1;min-width:0}
+  .file-name{color:var(--ink);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-sub{color:var(--ink-faint);font-size:12.5px;margin-top:2px}
+  .relink{background:none;border:1px solid var(--edge);color:var(--ink-dim);
+    font:inherit;font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .relink:hover{border-color:var(--gold-dim);color:var(--ink)}
+
+  /* toggles */
+  .opts{display:grid;gap:10px}
+  .opts + .opts{margin-top:10px}
+  .opt{display:flex;align-items:center;gap:14px;padding:13px 15px;border-radius:10px;
+    background:rgba(0,0,0,.2);border:1px solid var(--edge-soft)}
+  .switch{position:relative;flex:none;width:42px;height:24px}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .track{position:absolute;inset:0;border-radius:999px;background:#2c2417;
+    border:1px solid var(--edge);transition:background .18s,border-color .18s}
+  .thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+    background:var(--ink-faint);transition:transform .18s,background .18s}
+  .switch input:checked ~ .track{background:rgba(201,164,74,.28);border-color:var(--gold-dim)}
+  .switch input:checked ~ .thumb{transform:translateX(18px);background:var(--gold-bright)}
+  .switch input:focus-visible ~ .track{outline:2px solid var(--gold);outline-offset:2px}
+  .opt .lab{flex:1;display:flex;flex-direction:column;gap:4px}
+  .opt .lab .t{color:var(--ink);font-size:15px}
+  .info{flex:none;position:relative;width:18px;height:18px;border-radius:50%;
+    border:1px solid var(--gold-dim);color:var(--gold);font-size:11px;
+    display:grid;place-items:center;cursor:help;font-family:"Cinzel",serif;
+    background:none;padding:0;margin:0;-webkit-appearance:none;appearance:none;line-height:1}
+  .info:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .info .tip{position:absolute;bottom:140%;right:-6px;width:248px;max-width:calc(100vw - 32px);
+    background:#0c0a06;border:1px solid var(--edge);border-radius:9px;padding:11px 13px;
+    font-family:"Spectral",serif;font-size:13px;line-height:1.5;color:var(--ink);
+    box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(4px);
+    transition:opacity .15s,transform .15s,visibility .15s;z-index:5;text-align:left}
+  .info .tip::after{content:"";position:absolute;top:100%;right:9px;border:6px solid transparent;
+    border-top-color:var(--edge)}
+  .info:hover .tip,.info:focus .tip,.info:focus-within .tip{opacity:1;visibility:visible;transform:translateY(0)}
+
+  /* preview */
+  .pv-cap{color:var(--ink-faint);font-size:12.5px;margin:0 0 14px;font-style:italic}
+  .pv-group{margin-bottom:18px}
+  .pv-group:last-child{margin-bottom:0}
+  .pv-glabel{font-family:"Cinzel",serif;font-size:10.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--gold-dim);margin:0 0 9px}
+  .ground{background:radial-gradient(80% 120% at 50% 0%, #14110b, #0a0805);
+    border:1px solid var(--edge-soft);border-radius:11px;padding:14px;
+    display:flex;flex-wrap:wrap;gap:10px 12px}
+  .pill{display:inline-flex;align-items:center;gap:7px;
+    border-radius:5px;padding:4px 13px;font-family:"Spectral",serif;font-weight:500;
+    white-space:nowrap;border:1px solid;line-height:1.3;font-size:15px;
+    box-shadow:0 0 0 1px rgba(242,239,228,.08)}
+  /* minimap-icon glyph shown inside the chip */
+  .pill .mi{flex:none;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))}
+  .pill .mi-none{flex:none;width:11px;height:11px;border-radius:50%;
+    border:1px dashed currentColor;opacity:.32}
+
+  /* action */
+  .go{display:block;width:100%;font-family:"Cinzel",serif;font-weight:600;letter-spacing:.06em;font-size:16px;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#231a06;
+    border:none;border-radius:10px;padding:16px 26px;cursor:pointer;
+    box-shadow:0 8px 22px -10px rgba(201,164,74,.7);transition:filter .15s,transform .05s}
+  .go:hover{filter:brightness(1.07)}
+  .go:active{transform:translateY(1px)}
+  .go:disabled{background:#2a2417;color:var(--ink-faint);box-shadow:none;cursor:not-allowed}
+  .go:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px}
+  .status{font-size:14px;color:var(--ink-dim);text-align:center;margin-top:14px}
+  .status.ok b{color:var(--good)}
+  .status .note{display:block;color:var(--ink-faint);font-size:12.5px;margin-top:3px}
+
+  .pv-title{font-family:"Cinzel",serif;font-weight:600;font-size:16px;margin:0 0 10px;
+    letter-spacing:.04em;color:var(--ink)}
+
+  .foot{color:var(--ink-faint);font-size:12.5px;text-align:center;margin:30px 0 0;
+    line-height:1.6}
+  .foot + .foot{margin-top:5px}
+  .foot b{color:var(--ink-dim);font-weight:500}
+
+  @media (max-width:520px){
+    .card{padding:20px 16px}
+    .info .tip{right:-6px;left:auto;width:min(248px,calc(100vw - 64px))}
+    .info .tip::after{right:9px;left:auto}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">poe1filter FilterBlade Theme</p>
+  <h1>Repaint your poe1filter<br>in <span class="accent">FilterBlade</span> colors</h1>
+  <p class="lede">This tool takes a filter built on <a href="https://poe1filter.com" target="_blank" rel="noopener">poe1filter.com</a>
+    and restyles it with FilterBlade’s look (tier colors, icons, and effects). It only changes the <b>look</b>. The items' visibility and tiering are not affected.</p>
+  <p class="lede" style="margin-bottom:38px">To use it configure and download your filter on
+    <a href="https://poe1filter.com" target="_blank" rel="noopener">poe1filter.com</a>, then load it below.</p>
+
+  <div class="card">
+    <div class="step"><span class="num">1</span><h2>Load your filter</h2></div>
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose a filter file or drop one here">
+      <div class="dz-main">Drop your <b>.filter</b> file here</div>
+      <div class="dz-sub">or click to select a file.</div>
+    </div>
+    <input id="file" type="file" accept=".filter,.txt" hidden>
+  </div>
+
+  <div class="card">
+    <div class="step"><span class="num">2</span><h2>What to repaint</h2></div>
+    <p class="step-sub">Equipment (weapons, armour, jewellery, flasks &amp; charms) is <b>not</b> changed. Only the item categories below are restyled. Turn any of them off to keep the poe1filter styling.</p>
+    <div class="opts" id="groups"></div>
+
+    <details class="adv">
+      <summary>Advanced settings</summary>
+      <p class="step-sub adv-sub">Anything you leave off keeps your poe1filter setting.</p>
+      <div class="opts" id="opts"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <button id="go" class="go" disabled>Apply theme &amp; download</button>
+    <div id="status" class="status">Load a filter to begin.</div>
+  </div>
+
+  <div class="card">
+    <div class="step"><span class="num">3</span><h2>Install it in Path of Exile</h2></div>
+    <p class="step-sub">Move the downloaded <b>.filter</b> file into your game's filter folder:</p>
+    <p class="path">%userprofile%\Documents\My Games\Path of Exile</p>
+    <p class="step-sub">Then in-game open <b>Options&nbsp;→&nbsp;UI</b>, scroll down, and pick your filter from the <b>List of Item Filters</b> dropdown. Click the reload icon to apply after each update.</p>
+  </div>
+
+  <div class="card">
+    <h2 class="pv-title">Theme preview</h2>
+    <p class="pv-cap">The tiers correspond to the poe1filter tiers, shown in the FilterBlade colour they'll be repainted to. Uniques, maps and gems use their own tier names.</p>
+    <div id="preview"></div>
+  </div>
+
+  <p class="foot">Runs in your browser, your filter is not uploaded. Last updated on 26.07.2026.
+    Made by <a href="https://charlesgrassin.com" target="_blank" rel="noopener">Charles Grassin</a>.</p>
+  <p class="foot">Built on the work of <a href="https://poe1filter.com" target="_blank" rel="noopener">poe1filter</a> and <a href="https://www.filterblade.xyz" target="_blank" rel="noopener">FilterBlade</a> (by <a href="https://github.com/NeverSinkDev" target="_blank" rel="noopener">NeverSink</a>); huge thanks to their developers.</p>
+</div>
+
+<script>
+/* ========== FilterBlade PoE1 palettes (extracted from NeverSink 8.20 semi-strict) ========== */
+const HIDE={font:"38",text:"140 120 100 220",border:null,bg:null,icon:null,beam:null,sound:null};
+// Economy ladder: currency + most stackables. Palette copied verbatim from the PoE2 FilterBlade tool.
+const ECONOMY={
+  S:{font:"45",text:"255 0 0 255",    border:"255 0 0 255",    bg:"255 255 255 255",icon:"0 Red Star",     beam:"Red",       sound:"6 300"},
+  A:{font:"45",text:"255 255 255 255",border:"255 255 255 255",bg:"245 105 90 255", icon:"0 Red Circle",   beam:"Red",       sound:"1 300"},
+  B:{font:"42",text:"0 0 0 255",      border:"0 0 0 255",      bg:"245 105 90 255", icon:"1 Yellow Circle",beam:"Yellow",    sound:"2 300"},
+  C:{font:"42",text:"0 0 0 255",      border:"0 0 0 255",      bg:"245 139 87 255", icon:"1 Yellow Circle",beam:"White",     sound:"2 300"},
+  D:{font:"40",text:"0 0 0 255",      border:"0 0 0 255",      bg:"240 180 100 255",icon:"2 White Circle", beam:"White",     sound:"2 300"},
+  E:{font:"40",text:"240 207 132",    border:"240 207 132",    bg:null,             icon:"2 Grey Circle",  beam:"White Temp",sound:null},
+  F:{font:"35",text:"170 158 130",    border:null,             bg:null,             icon:null,             beam:null,        sound:null},
+};
+
+// Fragment ladder: fragments & scarabs. FilterBlade fragments t1..t5 (purple hexagons).
+const FRAGMENT={
+  S:{font:"45",text:"180 0 255 255",  border:"180 0 255 255",  bg:"255 255 255 255",icon:"0 Red Star",      beam:"Red",     sound:"6 300"},
+  A:{font:"45",text:"255 255 255 255",border:"255 255 255 255",bg:"180 0 255 255",  icon:"0 Red Hexagon",   beam:"Red",     sound:"1 300"},
+  B:{font:"45",text:"0 0 0 255",      border:"0 0 0 255",      bg:"180 0 255 255",  icon:"1 Yellow Hexagon",beam:"Yellow",  sound:"2 300"},
+  C:{font:"45",text:"0 0 0 255",      border:"0 0 0 255",      bg:"175 120 230 240",icon:"2 White Hexagon", beam:"White",   sound:"2 300"},
+  D:{font:"45",text:"175 120 230 240",border:"175 120 230 240",bg:null,             icon:"2 White Hexagon", beam:"Grey Temp",sound:null},
+  E:"REUSE:D",
+  F:HIDE,
+};
+// Divination card ladder. FilterBlade divination t1..t5 (blue triangles).
+const DIVCARD={
+  S:{font:"45",text:"0 0 255 255",    border:"0 0 255 255",    bg:"255 255 255 255",icon:"0 Red Star",       beam:"Red",   sound:"6 300"},
+  A:{font:"45",text:"255 255 255 255",border:"255 255 255 255",bg:"0 20 180 255",   icon:"0 Red Triangle",   beam:"Red",   sound:"1 300"},
+  B:{font:"45",text:"0 0 0 255",      border:"0 0 0 255",      bg:"0 220 240 255",  icon:"1 Yellow Triangle",beam:"Yellow",sound:"2 300"},
+  C:{font:"45",text:"0 0 0 255",      border:"0 0 0 255",      bg:"39 141 192 255", icon:"2 White Triangle", beam:"White", sound:"2 300"},
+  D:{font:"38",text:"39 141 192 255", border:"39 141 192 255", bg:"20 20 0 255",    icon:null,               beam:null,    sound:null},
+  E:"REUSE:D",
+  F:HIDE,
+};
+const LADDERS={economy:ECONOMY,fragment:FRAGMENT,divcard:DIVCARD};
+const GROUP_OF={economy:"currency",fragment:"fragments",divcard:"divcards"};
+// Currency re-tiering (PoE2-style): always shift currency down one rung from C onward. B keeps its color; FilterBlade C is skipped.
+const ECON_ALIGN={S:"S",A:"A",B:"B",C:"D",D:"E",E:"F",F:"F"};
+// Uniques: FilterBlade unique t1/t2/t3/multi (brown stars).
+const UNIQ={
+  t1:   {font:"45",text:"175 96 37 255", border:"175 96 37 255",  bg:"255 255 255 255",icon:"0 Red Star",   beam:"Red",   sound:"6 300"},
+  t2:   {font:"45",text:"255 255 255 255",border:"255 255 255 255",bg:"175 96 37 255", icon:"1 Yellow Star",beam:"Yellow",sound:"1 300"},
+  t3:   {font:"45",text:"0 0 0 255",     border:"0 0 0 255",      bg:"175 96 37 255",  icon:"1 White Star", beam:"White", sound:"3 300"},
+  multi:{font:"45",text:"0 0 0 255",     border:"0 240 190 255",  bg:"175 96 37 255",  icon:"1 Blue Star",  beam:"Blue",  sound:"3 300"},
+};
+const UNIQ_ID={
+  "uniques-excellent":"t1","uniques-good":"t2","uniques-unknown":"t2","uniques-maps":"t2",
+  "uniques-potential":"t3","uniques-restricted":"t3","uniques-other":"t3","uniques-foulborn":"multi",
+};
+// Maps: FilterBlade map styles (purple squares).
+const MAP={
+  HIGH:{font:"45",text:"100 0 122 255", border:"100 0 122 255", bg:"255 255 255 255",icon:"0 Red Square",   beam:"Red",   sound:"1 300"},
+  MID: {font:"45",text:"145 30 220 255",border:"145 30 220 255",bg:"235 220 245 255",icon:"0 Purple Square",beam:"Purple",sound:"5 300"},
+  LOW: {font:"45",text:"145 30 220 255",border:"145 30 220 255",bg:"200 200 200 255",icon:"1 Purple Square",beam:"Purple",sound:"5 300"},
+};
+function mapRung(bid){
+  if(/tier-1[67]|memory|blight|delirium|influenced|eight-mod/.test(bid))return "HIGH";
+  if(/tier-11/.test(bid))return "MID";
+  return "LOW";
+}
+// Gems: FilterBlade gem styles (cyan triangles; special/awakened stand out).
+const GEM={
+  AWAK:   {font:"45",text:"0 0 125 255",   border:"0 0 125 255",   bg:"255 255 255 255",icon:"0 Red Star",       beam:"Red",     sound:"6 300"},
+  SPECIAL:{font:"45",text:"20 240 240 255",border:"240 0 0 255",   bg:"70 0 20 255",    icon:"0 Red Triangle",   beam:"Red",     sound:"1 300"},
+  GEN1:   {font:"45",text:"20 240 240 255",border:"20 240 240 255",bg:"6 0 60 255",     icon:"1 Yellow Triangle",beam:"White",   sound:"2 300"},
+  GEN2:   {font:"45",text:"30 190 190 255",border:"30 190 190 255",bg:null,             icon:"1 White Triangle", beam:"Grey",    sound:"2 300"},
+  GEN3:   {font:"45",text:"30 190 190 255",border:"40 130 130 255",bg:null,             icon:"1 Grey Triangle",  beam:"Grey Temp",sound:null},
+};
+const GEM_ID={
+  "gems-top-awakened":"AWAK","gems-top-special-support":"SPECIAL","gems-top-exceptional-support":"SPECIAL",
+  "gems-imbued":"SPECIAL","gems-quality-23":"SPECIAL","gems-other-exceptional-support":"GEN1",
+  "gems-level-21":"GEN1","gems-quality-10-plus":"GEN1","gems-level":"GEN2",
+  "gems-other-level":"GEN3","gems-other-quality":"GEN3",
+};
+// poe1filter section -> palette. All of these use S..F "X-Tier" block naming.
+const SECTION_PALETTE={
+  "Currency":"economy","Essences":"economy","Expedition":"economy","Omens":"economy","Wombgifts":"economy",
+  "Catalysts":"economy","Delirium Orbs":"economy","Delve":"economy","Ducats":"economy","Oils":"economy",
+  "Legion":"economy","Splinters":"economy","Tattoos":"economy","Runegrafts":"economy","Allflame Embers":"economy",
+  "Astrolabes":"economy","Wisps":"economy",
+  "Fragments":"fragment","Scarabs":"fragment",
+  "Divination Cards":"divcard",
+};
+const TIER_ORDER=["S","A","B","C","D","E","F"];
+const FACET_KEYS={text:"color",border:"color",bg:"color",icon:"icon",font:"font",beam:"beam",sound:"sound"};
+const KEYWORD={text:"SetTextColor",border:"SetBorderColor",bg:"SetBackgroundColor",icon:"MinimapIcon",font:"SetFontSize",beam:"PlayEffect",sound:"PlayAlertSound"};
+const KW_SET=new Set(Object.values(KEYWORD));
+const DECL_RE=/^(Show|Hide)\s*#\s*(.*?)\s*(?:\(([^)]*)\))?\s*$/;
+const SECTION_RE=/^###\s+(.+?)\s*$/;
+const TIER_RE=/\b([SABCDEF])-Tier\b/;
+function bump(r,n=1){const i=TIER_ORDER.indexOf(r);return TIER_ORDER[Math.max(0,i-n)];}
+function resolve(l,r){const s=l[r];if(typeof s==="string"&&s.startsWith("REUSE:"))return l[s.split(":")[1]];return s;}
+// Resolve a block -> {group, style}. style=null + unmatched => in a themed section but no tier tag.
+function resolveBlock(section,name,bid){
+  if(bid in UNIQ_ID) return {group:"uniques", style:UNIQ[UNIQ_ID[bid]]};
+  if(bid in GEM_ID)  return {group:"gems",    style:GEM[GEM_ID[bid]]};
+  if(/^maps-/.test(bid)) return {group:"maps", style:MAP[mapRung(bid)]};
+  if(section in SECTION_PALETTE){
+    const pal=SECTION_PALETTE[section], grp=GROUP_OF[pal];
+    const tm=TIER_RE.exec(name);
+    if(!tm) return {group:grp, style:null, unmatched:true, name};
+    let r=tm[1];
+    if(pal==="economy"){
+      if(/^Large Stacks of/.test(name)||bid.endsWith("-large-stacks")) r=bump(r,2);
+      else if(/^Small Stacks of/.test(name)||bid.endsWith("-small-stacks")) r=bump(r,1);
+      r=ECON_ALIGN[r]||r; // always re-tier currency
+    }
+    return {group:grp, style:resolve(LADDERS[pal],r)};
+  }
+  return null;
+}
+function applyStyle(body,indent,style,facets){
+  const kept=[],existing={};
+  for(const ln of body){const m=ln.match(/^\s*([A-Za-z]+)\b/);const kw=m?m[1]:null;
+    if(kw&&KW_SET.has(kw))existing[kw]=kept.length;kept.push(ln);}
+  const remove=new Set();
+  for(const [fk,value] of Object.entries(style)){
+    if(!facets.has(FACET_KEYS[fk]))continue;
+    const kw=KEYWORD[fk];
+    if(value===null){if(kw in existing)remove.add(existing[kw]);continue;}
+    const nl=indent+kw+" "+value;
+    if(kw in existing)kept[existing[kw]]=nl;else kept.push(nl);
+  }
+  return kept.filter((_,i)=>!remove.has(i));
+}
+function process(text,facets,groups){
+  const lines=text.split("\n"),out=[],log=[];let section=null,i=0,themed=0,total=0;const n=lines.length;
+  while(i<n){
+    const ln=lines[i];
+    const sm=SECTION_RE.exec(ln);if(sm&&!sm[1].startsWith("#"))section=sm[1];
+    const dm=DECL_RE.exec(ln);
+    if(!dm){out.push(ln);i++;continue;}
+    total++;
+    const name=dm[2],bid=dm[3]||"";
+    let j=i+1;const body=[];
+    while(j<n){const s=lines[j].trim();if(s===""||DECL_RE.test(lines[j])||lines[j].startsWith("#"))break;body.push(lines[j]);j++;}
+    const indent=body.length?body[0].match(/^(\s*)/)[1]:"  ";
+    const info=resolveBlock(section,name,bid);
+    if(info&&groups.has(info.group)){
+      if(info.style){
+        const nb=applyStyle(body,indent,info.style,facets);
+        out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;
+      } else if(info.unmatched){ log.push(info.name+" ("+section+")"); }
+    }
+    out.push(ln);i++;
+  }
+  return {text:out.join("\n"),log,themed,total};
+}
+
+
+/* ============================ UI ============================ */
+const FACETS=[
+  {key:"color",t:"Colors",d:"text, chip & border",
+   tip:"Repaints each item’s text color, background chip, and border to the FilterBlade tier colors. Turn off to keep your filter’s original colors."},
+  {key:"icon",t:"Map icons",d:"minimap shapes",
+   tip:"Swaps the minimap icon — its shape, size, and color — for the FilterBlade one. Turn off to keep your filter’s icons."},
+  {key:"font",t:"Font size",d:"text scale by tier",
+   tip:"Resizes item text to the FilterBlade scale, where more valuable tiers are larger. Turn off to keep your filter’s font sizes."},
+  {key:"beam",t:"Light beams",d:"drop beams",
+   tip:"Sets the colored light beam that shines over a dropped item. Turn off to keep your filter’s beams."},
+  {key:"sound",t:"Alert sounds",d:"drop sounds",
+   tip:"Sets the alert sound that plays when an item drops. Turn off to keep your filter’s sounds."},
+];
+const facetState=new Set(FACETS.map(f=>f.key)); // all on
+
+const TIERS=["S","A","B","C","D","E"];
+const PV=[
+  {key:"currency", label:"Currency, essences, oils, delve, expedition, catalysts & more", pal:"economy"},
+  {key:"fragments",label:"Fragments & scarabs", pal:"fragment"},
+  {key:"divcards", label:"Divination cards", pal:"divcard"},
+  {key:"gems",     label:"Gems", chips:[["Awakened",GEM.AWAK],["Special / 23q",GEM.SPECIAL],["Leveled",GEM.GEN1],["16+ / qual",GEM.GEN2],["Other",GEM.GEN3]]},
+  {key:"uniques",  label:"Uniques & chance bases", chips:[["Excellent",UNIQ.t1],["Good",UNIQ.t2],["Other",UNIQ.t3],["Foulborn",UNIQ.multi]]},
+  {key:"maps",     label:"Maps", chips:[["High / special",MAP.HIGH],["Tier 11+",MAP.MID],["Low tier",MAP.LOW]]},
+];
+const groupState=new Set(PV.map(g=>g.key)); // all on
+
+let loadedText=null, loadedName=null;
+
+const $=s=>document.querySelector(s);
+const drop=$("#drop"), fileInput=$("#file"), go=$("#go"), status=$("#status");
+
+// build toggles
+$("#opts").innerHTML=FACETS.map(f=>`
+  <label class="opt">
+    <span class="switch">
+      <input type="checkbox" data-facet="${f.key}" checked aria-label="${f.t}">
+      <span class="track"></span><span class="thumb"></span>
+    </span>
+    <span class="lab"><span class="t">${f.t}</span></span>
+    <button type="button" class="info" aria-label="About ${f.t}">?<span class="tip">${f.tip}</span></button>
+  </label>`).join("");
+document.querySelectorAll('input[data-facet]').forEach(cb=>{
+  cb.addEventListener("change",()=>{
+    cb.checked?facetState.add(cb.dataset.facet):facetState.delete(cb.dataset.facet);
+  });
+});
+
+// build category toggles
+$("#groups").innerHTML=PV.map(g=>`
+  <label class="opt">
+    <span class="switch">
+      <input type="checkbox" data-group="${g.key}" checked aria-label="${g.label}">
+      <span class="track"></span><span class="thumb"></span>
+    </span>
+    <span class="lab"><span class="t">${g.label}</span></span>
+  </label>`).join("");
+document.querySelectorAll('input[data-group]').forEach(cb=>{
+  cb.addEventListener("change",()=>{
+    cb.checked?groupState.add(cb.dataset.group):groupState.delete(cb.dataset.group);
+    renderPreview();
+  });
+});
+
+/* ---- static palette preview (just the chips) ---- */
+function rgba(s){const p=s.split(/\s+/).map(Number);const a=p.length>3?p[3]/255:1;return `rgba(${p[0]},${p[1]},${p[2]},${a})`;}
+
+/* ---- minimap icon glyphs ---- */
+// The 11 colors and 12 shapes the game accepts for MinimapIcon.
+const ICON_COLOR={Red:"#e14b3a",Green:"#4cc95e",Blue:"#4a7fe0",Brown:"#9b6533",White:"#f2efe4",
+  Yellow:"#f2c53d",Cyan:"#28d8d8",Grey:"#9d9d9d",Orange:"#ec8b2b",Pink:"#ea84bd",Purple:"#a855e0"};
+// MinimapIcon size: 0 = large, 1 = medium, 2 = small.
+const ICON_PX=[17,14,11.5];
+const ICON_SHAPE={
+  Circle:'<circle cx="12" cy="12" r="9.5"/>',
+  Square:'<rect x="3" y="3" width="18" height="18" rx="1.5"/>',
+  Diamond:'<polygon points="12,1.5 22.5,12 12,22.5 1.5,12"/>',
+  Triangle:'<polygon points="12,2.5 22,20.5 2,20.5"/>',
+  Hexagon:'<polygon points="12,1.5 21,6.75 21,17.25 12,22.5 3,17.25 3,6.75"/>',
+  Pentagon:'<polygon points="12,1.8 22.4,9.4 18.4,21.6 5.6,21.6 1.6,9.4"/>',
+  Star:'<polygon points="12,2 14.47,8.6 21.51,8.91 15.99,13.3 17.88,20.09 12,16.2 6.12,20.09 8.01,13.3 2.49,8.91 9.53,8.6"/>',
+  Cross:'<polygon points="9,2 15,2 15,9 22,9 22,15 15,15 15,22 9,22 9,15 2,15 2,9 9,9"/>',
+  Kite:'<polygon points="12,1.5 21,9.5 12,22.5 3,9.5"/>',
+  Moon:'<path d="M16.5 2.6a10 10 0 1 0 0 18.8 10.4 10.4 0 0 1 0-18.8z"/>',
+  Raindrop:'<path d="M12 1.8c4.6 6.4 8 9.6 8 13.2a8 8 0 0 1-16 0c0-3.6 3.4-6.8 8-13.2z"/>',
+  UpsideDownHouse:'<polygon points="5.6,2.4 18.4,2.4 22.4,14.6 12,22.2 1.6,14.6"/>',
+};
+// icon string is "<size> <color> <shape>", e.g. "0 Red Circle"
+function iconSvg(icon){
+  const parts=String(icon||"").trim().split(/\s+/);
+  if(parts.length<3)return null;
+  const [size,color,shape]=parts;
+  const path=ICON_SHAPE[shape];
+  if(!path)return null;
+  const px=ICON_PX[+size]??ICON_PX[1];
+  const fill=ICON_COLOR[color]||"#f2efe4";
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("class","mi");
+  svg.setAttribute("viewBox","0 0 24 24");
+  svg.setAttribute("width",px);svg.setAttribute("height",px);
+  svg.setAttribute("aria-hidden","true");
+  // dark outline so pale icons stay legible on pale chips
+  svg.innerHTML=`<g fill="${fill}" stroke="rgba(0,0,0,.55)" stroke-width="1.2"
+    stroke-linejoin="round">${path}</g>`;
+  return svg;
+}
+
+function chip(style,label){
+  const pill=document.createElement("span");pill.className="pill";
+  const svg=iconSvg(style.icon);
+  if(svg)pill.appendChild(svg);
+  else{const ph=document.createElement("span");ph.className="mi-none";
+    ph.title="No minimap icon";pill.appendChild(ph);}
+  pill.appendChild(document.createTextNode(label));
+  pill.style.color=style.text?rgba(style.text):"var(--ink)";
+  pill.style.background=style.bg?rgba(style.bg):"transparent";
+  pill.style.borderColor=style.border?rgba(style.border):(style.bg?rgba(style.bg):"var(--edge)");
+  return pill;
+}
+function row(label,chips){
+  const grp=document.createElement("div");grp.className="pv-group";
+  const cap=document.createElement("p");cap.className="pv-glabel";cap.textContent=label;grp.appendChild(cap);
+  const ground=document.createElement("div");ground.className="ground";
+  for(const [name,style] of chips)ground.appendChild(chip(style,name));
+  grp.appendChild(ground);return grp;
+}
+function renderPreview(){
+  const host=$("#preview");host.innerHTML="";let any=false;
+  for(const g of PV){
+    if(!groupState.has(g.key))continue;
+    any=true;
+    const chips=g.pal?TIERS.map(t=>{const rr=(g.pal==="economy")?(ECON_ALIGN[t]||t):t;return [t+" Tier",resolve(LADDERS[g.pal],rr)];}):g.chips;
+    host.appendChild(row(g.label,chips));
+  }
+  if(!any){const p=document.createElement("p");p.className="pv-empty";p.textContent="Nothing selected — turn on a category above to preview it.";host.appendChild(p);}
+}
+renderPreview();
+
+/* ---- file handling ---- */
+function setLoaded(name,size){
+  loadedName=name;
+  drop.classList.add("loaded");
+  drop.innerHTML=`<span class="file-glyph">◆</span>
+    <span class="file-meta"><span class="file-name">${name}</span>
+    <span class="file-sub">${(size/1024).toFixed(1)} KB loaded</span></span>
+    <button class="relink" type="button">Change</button>`;
+  drop.querySelector(".relink").addEventListener("click",e=>{e.stopPropagation();fileInput.click();});
+  go.disabled=false;
+  status.className="status";status.textContent="Ready. Choose what to repaint, then apply.";
+}
+function readFile(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{loadedText=r.result;setLoaded(file.name,file.size);};
+  r.onerror=()=>{status.className="status";status.innerHTML="<b style='color:var(--bad)'>Couldn’t read that file.</b> Try choosing it again.";};
+  r.readAsText(file);
+}
+drop.addEventListener("click",()=>fileInput.click());
+drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}});
+fileInput.addEventListener("change",e=>readFile(e.target.files[0]));
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)readFile(f);});
+
+/* ---- apply & download ---- */
+go.addEventListener("click",()=>{
+  if(loadedText==null)return;
+  if(groupState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>No categories selected.</b> Turn on at least one category to repaint.";return;}
+  if(facetState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>Nothing to copy.</b> Open Advanced and turn on at least one part of the look.";return;}
+  const res=process(loadedText,facetState,groupState);
+  const blob=new Blob([res.text],{type:"text/plain"});
+  const url=URL.createObjectURL(blob);
+  const base=(loadedName||"filter").replace(/\.(filter|txt)$/i,"");
+  const a=document.createElement("a");a.href=url;a.download=base+"-filterblade.filter";
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  const facetList=[...facetState].join(", ");
+  status.className="status ok";
+  status.innerHTML=`Done — repainted <b>${res.themed}</b> of ${res.total} blocks. Downloaded as <b>${base}-filterblade.filter</b>.`
+    +`<span class="note">Applied: ${facetList}.`
+    +(res.log.length?` ${res.log.length} block(s) had no tier and were left untouched.`:"")+`</span>`;
+});
+</script>
+</body>
+</html>
