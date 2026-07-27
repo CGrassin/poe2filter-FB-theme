@@ -190,7 +190,7 @@
 
   <div class="card">
     <div class="step"><span class="num">2</span><h2>What to repaint</h2></div>
-    <p class="step-sub">Equipment (weapons, armour, jewellery, flasks &amp; charms) is <b>not</b> changed. Only the item categories below are restyled. Turn any of them off to keep the poe1filter styling.</p>
+    <p class="step-sub">Each category below is repainted in FilterBlade colours including <b>Equipment</b> (weapons, armour, jewellery &amp; flasks). Turn any category off to keep its original poe1filter styling. It only ever changes the look; it never changes what shows, hides, or how items are tiered.</p>
     <div class="opts" id="groups"></div>
 
     <details class="adv">
@@ -297,6 +297,67 @@ const GEM_ID={
   "gems-level-21":"GEN1","gems-quality-10-plus":"GEN1","gems-level":"GEN2",
   "gems-other-level":"GEN3","gems-other-quality":"GEN3",
 };
+// ===== Equipment (weapons, armour, jewellery & flasks) =====
+// poe1filter equipment blocks carry no tier tag and usually set no colours (they only add a
+// beam/icon/sound and inherit the game’s rarity colour). So we map each block *id* to a
+// FilterBlade-inspired style and inject it. FilterBlade’s gear vocabulary:
+//   • exotic / special-mod gear = cyan text+border, dark bg, Blue Diamond, Blue beam, sound 3
+//   • crafting bases           = white text, Yellow/White Diamond
+//   • links & socket recipes   = Blue/Grey Hexagon
+//   • cluster jewels           = purple text, Yellow/White Pentagon
+//   • leveling gear            = subtle borders + Grey Diamond, rarity text kept
+// Styles with text:null keep the item’s default rarity colour (rare=yellow, magic=blue, normal=white).
+const CYAN="0 240 190 255";
+const EQUIP={
+  // your-build favourites — most prominent
+  MY_EXC:      {font:"45",text:CYAN,           border:CYAN,            bg:"0 75 30 255",   icon:"0 Blue Diamond",   beam:"Blue",     sound:"3 300"},
+  MY_GOOD:     {font:"45",text:CYAN,           border:CYAN,            bg:"20 20 0 255",   icon:"1 Blue Diamond",   beam:"Blue",     sound:"3 300"},
+  MY_REG:      {font:"45",text:null,           border:CYAN,            bg:"20 20 0 255",   icon:"2 Blue Diamond",   beam:"Blue",     sound:null},
+  // exotic / special-mod gear & jewellery (influenced, fractured, veiled, anointed, memory strand, corrupted-implicit)
+  SPECIAL:     {font:"45",text:CYAN,           border:CYAN,            bg:"20 20 0 255",   icon:"1 Blue Diamond",   beam:"Blue",     sound:"3 300"},
+  // crafting bases
+  CRAFT_EXC:   {font:"45",text:"255 255 255 255",border:"200 200 0 255",  bg:"20 20 0 255",   icon:"1 Yellow Diamond", beam:"Yellow",   sound:"2 300"},
+  CRAFT_GOOD:  {font:"45",text:"255 255 255 255",border:"180 180 180 255", bg:"20 20 0 255",   icon:"2 White Diamond",  beam:"White",    sound:null},
+  // links & socket / quality recipes
+  LINK_TOP:    {font:"45",text:"255 255 255 255",border:CYAN,            bg:"155 138 138 255",icon:"1 Blue Hexagon",  beam:"Blue",     sound:"2 300"},
+  LINK:        {font:"45",text:"255 255 255 255",border:CYAN,            bg:"20 20 0 255",   icon:"2 Blue Hexagon",   beam:"Blue",     sound:null},
+  RECIPE:      {font:"40",text:null,           border:"100 100 100 150", bg:"20 20 0 255",   icon:"2 Grey Diamond",   beam:"Grey Temp",sound:null},
+  FLASK_QUAL:  {font:"45",text:"255 255 255 255",border:"255 255 255 255", bg:"155 138 138 255",icon:null,             beam:"Grey Temp",sound:null},
+  FLASK_UTIL:  {font:"45",text:"50 200 125 255",border:"50 200 125 255", bg:"25 100 75 255",  icon:"2 Grey Circle",   beam:"Grey",     sound:null},
+  // cluster jewels
+  CLUSTER_EXC: {font:"45",text:"150 0 255 255",border:"240 100 0 255",  bg:"34 0 67 255",   icon:"1 Yellow Pentagon",beam:"Yellow",   sound:"2 300"},
+  CLUSTER_GOOD:{font:"45",text:"150 0 255 255",border:"150 0 255 255",  bg:"34 0 67 255",   icon:"2 White Pentagon", beam:"White",    sound:"2 300"},
+  // leveling gear (keep rarity text; harmonise borders/beams/icons)
+  LEVEL_EXC:   {font:"45",text:null,           border:"0 140 240 255",  bg:"20 20 0 255",   icon:"2 Grey Diamond",   beam:"Grey",     sound:"2 300"},
+  LEVEL_GOOD:  {font:"45",text:null,           border:"0 120 120 255",  bg:"20 20 0 255",   icon:"2 Grey Diamond",   beam:"Grey Temp",sound:null},
+  LEVEL_RARE:  {font:"45",text:null,           border:"255 255 255 255", bg:"20 20 0 255",   icon:null,              beam:null,       sound:null},
+  LEVEL_MAGIC: {font:"40",text:null,           border:CYAN,            bg:"20 20 0 255",   icon:null,              beam:null,       sound:null},
+  LEVEL_NORMAL:{font:"40",text:null,           border:"100 100 100 150", bg:"20 20 0 255",   icon:null,              beam:null,       sound:null},
+};
+// poe1filter equipment block id (suffixes like /weapon/2 stripped) -> EQUIP tier.
+// Only Show blocks are listed; Hide blocks (hide-remaining, hidden-*, leveling flasks) are
+// intentionally omitted so their visibility and look are left exactly as poe1filter set them.
+const EQUIP_ID={
+  "gear-crafting-bases-excellent-base-types":"CRAFT_EXC","gear-crafting-bases-good-base-types":"CRAFT_GOOD",
+  "jewellery-crafting-bases-excellent-base-types":"CRAFT_EXC","jewellery-crafting-bases-good-base-types":"CRAFT_GOOD",
+  "jewellery-crafting-bases-other-special-base-types":"CRAFT_GOOD",
+  "gear-my-excellent-crafting-base":"MY_EXC","gear-my-excellent-memory-strands":"MY_EXC","gear-my-six-link":"MY_EXC",
+  "gear-my-good-crafting-base":"MY_GOOD","gear-my-good-memory-strands":"MY_GOOD",
+  "gear-my-regular-rare":"MY_REG","gear-my-regular-magic":"MY_REG","gear-my-regular-normal":"MY_REG",
+  "gear-influenced":"SPECIAL","gear-fractured":"SPECIAL","gear-veiled":"SPECIAL","gear-memory-strands":"SPECIAL",
+  "jewellery-influenced":"SPECIAL","jewellery-veiled":"SPECIAL","jewellery-fractured":"SPECIAL","jewellery-memory-strands":"SPECIAL",
+  "jewellery-anointed-amulets":"SPECIAL","jewellery-corrupted-implicit":"SPECIAL","jewels-corrupted-implicit":"SPECIAL",
+  "gear-six-linked":"LINK_TOP","gear-six-colour":"LINK_TOP","gear-five-colour":"LINK",
+  "gear-four-colour":"RECIPE","gear-recipe-chromatic":"RECIPE","gear-recipe-jewellers":"RECIPE",
+  "gear-recipe-quality-weapons":"RECIPE","gear-recipe-quality-armour":"RECIPE","flasks-recipe-quality":"FLASK_QUAL",
+  "jewels-cluster-excellent":"CLUSTER_EXC","jewels-cluster-good":"CLUSTER_GOOD",
+  "gear-leveling-weapons-excellent-socketed":"LEVEL_EXC","gear-leveling-armour-excellent-socketed":"LEVEL_EXC",
+  "gear-leveling-weapons-good-socketed":"LEVEL_GOOD","gear-leveling-armour-good-socketed":"LEVEL_GOOD",
+  "gear-leveling-weapons-rare":"LEVEL_RARE","gear-leveling-armour-rare":"LEVEL_RARE",
+  "gear-leveling-armour-magic-rare-boots":"LEVEL_RARE","gear-leveling-rare-first-areas":"LEVEL_RARE",
+  "gear-leveling-weapons-magic":"LEVEL_MAGIC","gear-leveling-armour-magic":"LEVEL_MAGIC",
+  "gear-leveling-weapons-normal":"LEVEL_NORMAL","gear-leveling-armour-normal":"LEVEL_NORMAL",
+};
 // poe1filter section -> palette. All of these use S..F "X-Tier" block naming.
 const SECTION_PALETTE={
   "Currency":"economy","Essences":"economy","Expedition":"economy","Omens":"economy","Wombgifts":"economy",
@@ -316,10 +377,19 @@ const TIER_RE=/\b([SABCDEF])-Tier\b/;
 function bump(r,n=1){const i=TIER_ORDER.indexOf(r);return TIER_ORDER[Math.max(0,i-n)];}
 function resolve(l,r){const s=l[r];if(typeof s==="string"&&s.startsWith("REUSE:"))return l[s.split(":")[1]];return s;}
 // Resolve a block -> {group, style}. style=null + unmatched => in a themed section but no tier tag.
-function resolveBlock(section,name,bid){
+function resolveBlock(section,name,bid,decl){
   if(bid in UNIQ_ID) return {group:"uniques", style:UNIQ[UNIQ_ID[bid]]};
   if(bid in GEM_ID)  return {group:"gems",    style:GEM[GEM_ID[bid]]};
   if(/^maps-/.test(bid)) return {group:"maps", style:MAP[mapRung(bid)]};
+  const baseId=bid.split("/")[0]; // favourites carry ids like gear-my-...-crafting-base/weapon/2
+  if(baseId in EQUIP_ID) return {group:"equipment", style:EQUIP[EQUIP_ID[baseId]]};
+  // Safety net: any *shown* flask/jewel/jewellery block whose exact id we didn’t hardcode
+  // (e.g. a different poe1filter config) still gets a matching colour instead of being left plain.
+  if(decl==="Show"){
+    if(/^flasks-/.test(baseId))    return {group:"equipment", style:/qual/.test(baseId)?EQUIP.FLASK_QUAL:EQUIP.FLASK_UTIL};
+    if(/^jewels-/.test(baseId))    return {group:"equipment", style:/cluster/.test(baseId)?EQUIP.CLUSTER_GOOD:EQUIP.SPECIAL};
+    if(/^jewellery-/.test(baseId)) return {group:"equipment", style:/base/.test(baseId)?EQUIP.CRAFT_GOOD:EQUIP.SPECIAL};
+  }
   if(section in SECTION_PALETTE){
     const pal=SECTION_PALETTE[section], grp=GROUP_OF[pal];
     const tm=TIER_RE.exec(name);
@@ -360,7 +430,7 @@ function process(text,facets,groups){
     let j=i+1;const body=[];
     while(j<n){const s=lines[j].trim();if(s===""||DECL_RE.test(lines[j])||lines[j].startsWith("#"))break;body.push(lines[j]);j++;}
     const indent=body.length?body[0].match(/^(\s*)/)[1]:"  ";
-    const info=resolveBlock(section,name,bid);
+    const info=resolveBlock(section,name,bid,dm[1]);
     if(info&&groups.has(info.group)){
       if(info.style){
         const nb=applyStyle(body,indent,info.style,facets);
@@ -396,8 +466,10 @@ const PV=[
   {key:"gems",     label:"Gems", chips:[["Awakened",GEM.AWAK],["Special / 23q",GEM.SPECIAL],["Leveled",GEM.GEN1],["16+ / qual",GEM.GEN2],["Other",GEM.GEN3]]},
   {key:"uniques",  label:"Uniques & chance bases", chips:[["Excellent",UNIQ.t1],["Good",UNIQ.t2],["Other",UNIQ.t3],["Foulborn",UNIQ.multi]]},
   {key:"maps",     label:"Maps", chips:[["High / special",MAP.HIGH],["Tier 11+",MAP.MID],["Low tier",MAP.LOW]]},
+  {key:"equipment",def:true,label:"Equipment (weapons, armour, jewellery & flasks)",
+   chips:[["Your build",EQUIP.MY_EXC],["Influenced / veiled",EQUIP.SPECIAL],["Crafting base",EQUIP.CRAFT_EXC],["6-link",EQUIP.LINK_TOP],["Cluster jewel",EQUIP.CLUSTER_EXC],["Quality flask",EQUIP.FLASK_QUAL],["Leveling rare",EQUIP.LEVEL_RARE]]},
 ];
-const groupState=new Set(PV.map(g=>g.key)); // all on
+const groupState=new Set(PV.filter(g=>g.def!==false).map(g=>g.key)); // all on except groups with def:false
 
 let loadedText=null, loadedName=null;
 
@@ -424,7 +496,7 @@ document.querySelectorAll('input[data-facet]').forEach(cb=>{
 $("#groups").innerHTML=PV.map(g=>`
   <label class="opt">
     <span class="switch">
-      <input type="checkbox" data-group="${g.key}" checked aria-label="${g.label}">
+      <input type="checkbox" data-group="${g.key}" ${g.def===false?"":"checked"} aria-label="${g.label}">
       <span class="track"></span><span class="thumb"></span>
     </span>
     <span class="lab"><span class="t">${g.label}</span></span>
