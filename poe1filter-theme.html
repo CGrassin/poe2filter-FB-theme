@@ -358,6 +358,22 @@ const EQUIP_ID={
   "gear-leveling-weapons-magic":"LEVEL_MAGIC","gear-leveling-armour-magic":"LEVEL_MAGIC",
   "gear-leveling-weapons-normal":"LEVEL_NORMAL","gear-leveling-armour-normal":"LEVEL_NORMAL",
 };
+// ===== Heist (blueprints, contracts, Rogue’s Markers) =====
+// Same id-map approach as equipment. FilterBlade’s heist signature is the Raindrop icon,
+// tiered by value (blueprints > contracts, enchanted > plain). Rogue’s Markers are minor
+// heist currency, kept subtle. HEIST_CT keeps the item’s default rarity text (text:null).
+const HEIST={
+  BP_ENCH: {font:"45",text:"245 190 0 255",  border:"255 85 85 255",  bg:"20 20 0 255", icon:"1 Yellow Raindrop", beam:"Yellow", sound:"3 300"},
+  BP:      {font:"45",text:"255 255 255 255",border:"255 255 255 255", bg:"20 20 0 255", icon:"1 White Raindrop",  beam:"White",  sound:"2 300"},
+  CT_ENCH: {font:"45",text:"255 255 255 255",border:"255 85 85 255",  bg:"20 20 0 255", icon:"2 White Raindrop",  beam:"White",  sound:"2 300"},
+  CT:      {font:"40",text:null,             border:"180 180 180 255", bg:"20 20 0 255", icon:"2 Grey Raindrop",   beam:"Grey Temp",sound:null},
+  MARK:    {font:"40",text:"235 200 110 255",border:"235 200 110 255", bg:"20 20 0 255", icon:"2 Grey Circle",     beam:null,     sound:null},
+};
+const HEIST_ID={
+  "heist-enchanted-blueprints":"BP_ENCH","heist-blueprints":"BP",
+  "heist-enchanted-contracts":"CT_ENCH","heist-contracts":"CT",
+  "heist-rogues-markers":"MARK",
+};
 // poe1filter section -> palette. All of these use S..F "X-Tier" block naming.
 const SECTION_PALETTE={
   "Currency":"economy","Essences":"economy","Expedition":"economy","Omens":"economy","Wombgifts":"economy",
@@ -383,6 +399,7 @@ function resolveBlock(section,name,bid,decl){
   if(/^maps-/.test(bid)) return {group:"maps", style:MAP[mapRung(bid)]};
   const baseId=bid.split("/")[0]; // favourites carry ids like gear-my-...-crafting-base/weapon/2
   if(baseId in EQUIP_ID) return {group:"equipment", style:EQUIP[EQUIP_ID[baseId]]};
+  if(baseId in HEIST_ID) return {group:"heist", style:HEIST[HEIST_ID[baseId]]};
   // Safety net: any *shown* flask/jewel/jewellery block whose exact id we didn’t hardcode
   // (e.g. a different poe1filter config) still gets a matching colour instead of being left plain.
   if(decl==="Show"){
@@ -468,6 +485,8 @@ const PV=[
   {key:"maps",     label:"Maps", chips:[["High / special",MAP.HIGH],["Tier 11+",MAP.MID],["Low tier",MAP.LOW]]},
   {key:"equipment",def:true,label:"Equipment (weapons, armour, jewellery & flasks)",
    chips:[["Your build",EQUIP.MY_EXC],["Influenced / veiled",EQUIP.SPECIAL],["Crafting base",EQUIP.CRAFT_EXC],["6-link",EQUIP.LINK_TOP],["Cluster jewel",EQUIP.CLUSTER_EXC],["Quality flask",EQUIP.FLASK_QUAL],["Leveling rare",EQUIP.LEVEL_RARE]]},
+  {key:"heist",    label:"Heist — blueprints, contracts & markers",
+   chips:[["Enchanted blueprint",HEIST.BP_ENCH],["Blueprint",HEIST.BP],["Enchanted contract",HEIST.CT_ENCH],["Contract",HEIST.CT],["Rogue’s Markers",HEIST.MARK]]},
 ];
 const groupState=new Set(PV.filter(g=>g.def!==false).map(g=>g.key)); // all on except groups with def:false
 
