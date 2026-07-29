@@ -644,9 +644,9 @@ document.querySelectorAll('input[data-facet]').forEach(cb=>{
 });
 
 /* ---- minimum font size control ---- */
-// 35 is FilterBlade's floor for shown items; 40 is where the bulk of its
-// ordinary drops sit, so it's the closest match to the FilterBlade feel.
-const FLOOR_SIZES=[35,38,40,42,45], FLOOR_DEFAULT=40;
+// 35 is FilterBlade's floor for shown items; a floor of 38 sits just above it,
+// close to the FilterBlade feel without pushing everything up to 40+.
+const FLOOR_SIZES=[34,36,38,40,42], FLOOR_DEFAULT=38;
 let floorSize=FLOOR_DEFAULT, floorOn=true;
 const floorRow=$("#floorRow"), floorBox=$("#floorOn"), floorPick=$("#floorSizes");
 
