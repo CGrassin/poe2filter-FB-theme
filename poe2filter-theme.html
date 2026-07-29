@@ -316,6 +316,89 @@ const CHANCE={
   SEARCHING:{font:"45",text:"125 255 89 255",border:"125 255 89 255",bg:"0 50 0",   icon:"0 Red Diamond",  beam:"Red",       sound:"1 300"},
   POTENTIAL:{font:"40",text:"125 255 89 255",border:"0 200 95 255",bg:null,          icon:"1 Green Diamond",beam:"Green Temp",sound:"3 300"},
 };
+// ===== Equipment (gear, jewellery, jewels, flasks & charms) =====
+// poe2filter's equipment blocks carry no S..F tier tag, so — exactly like the poe1
+// tool's EQUIP layer — we map each block *id* (the (…) suffix, with /weapon /armour
+// /jewellery /flask /jewel stripped) to a FilterBlade-flavoured style and inject it.
+// poe2 gear/jewellery use the Kite minimap shape, so we keep Kite here. Most gear
+// blocks show rare/magic/normal items and set no text colour, so text:null keeps the
+// game's rarity colour (rare=yellow, magic=blue, normal=white) and we only reframe the
+// border/chip/icon/beam/sound. Crafting bases are Normal (white) bases, so those get a
+// white text. Hide blocks (hide-remaining, hidden-*, leveling flask/charm hides) are
+// intentionally left out so their visibility is exactly what poe2filter set.
+// Values below are lifted straight from the FilterBlade 0.5 sample, so the colours,
+// icons, beams and fonts are FilterBlade's own — not invented. The tiers are:
+//   EXOTIC     — FilterBlade's "exotics_btier" look (cyan 0 240 190 + Blue Diamond +
+//                dark-green bg). FilterBlade reserves this for genuinely special items
+//                (timeless/corrupted-mod jewels, special bases, anointed), so we do too.
+//   CRAFT_TOP  — top economy crafting base: white text, pink border, dark-red bg,
+//                Red Diamond, Red beam, sound 1. (FB "group1t1")
+//   CRAFT      — lesser crafting base: pink border, 20 20 0 bg, Yellow Diamond. (FB t2)
+//   RARE_TOP   — high-ilevel rare gear: amber text (245 175 0) + Yellow Diamond, the
+//                signal FilterBlade uses for its best rares.
+//   RARE/MAGIC — ordinary rare / magic-normal gear: FB's flat "highlighted" backdrop
+//                (20 20 0 bg, font 40) with the item's own rarity colour kept.
+//   JEWEL_TOP/JEWEL — rare jewellery: FB's yellow bg (75 75 0) + Yellow beam + White
+//                Diamond, brighter for the top tier.
+//   FLASK      — flasks & charms: FB's amber border + dark-green bg (10 60 40).
+// text:null keeps the game's rarity colour. Hide blocks are left untouched.
+const EXOTIC="0 240 190 255", AMBER="245 175 0 255", PINK="255 127 127 255";
+const EQUIP={
+  EXOTIC:  {font:"42",text:EXOTIC,           border:EXOTIC,      bg:"0 75 30 255",  icon:"0 Blue Diamond",  beam:"Blue",  sound:"3 300"},
+  CRAFT_TOP:{font:"45",text:"255 255 255 255",border:PINK,       bg:"65 0 0 255",   icon:"0 Red Diamond",   beam:"Red",   sound:"1 300"},
+  CRAFT:   {font:"40",text:"255 255 255 255",border:PINK,        bg:"20 20 0 255",  icon:"1 Yellow Diamond", beam:"Yellow",sound:"3 300"},
+  RARE_TOP:{font:"42",text:AMBER,            border:AMBER,       bg:"20 20 0 255",  icon:"1 Yellow Diamond", beam:"Yellow",sound:"2 300"},
+  RARE:    {font:"40",text:null,             border:null,        bg:"20 20 0 255",  icon:null,               beam:null,    sound:null},
+  MAGIC:   {font:"40",text:null,             border:null,        bg:"20 20 0 255",  icon:null,               beam:null,    sound:null},
+  JEWEL_TOP:{font:"42",text:AMBER,           border:AMBER,       bg:"75 75 0 255",  icon:"1 White Diamond",  beam:"Yellow",sound:"2 300"},
+  JEWEL:   {font:"40",text:null,             border:null,        bg:"20 20 0 255",  icon:"1 White Diamond",  beam:"Yellow",sound:null},
+  FLASK:   {font:"40",text:null,             border:AMBER,       bg:"10 60 40 255", icon:null,               beam:null,    sound:null},
+};
+// poe2filter equipment block id (suffix stripped) -> EQUIP tier. Only Show blocks listed.
+// Note: poe2filter and FilterBlade bucket gear by different rules, so tier assignment is a
+// best-effort mapping — the colours are faithful, the "which block = which tier" is judgement.
+const EQUIP_ID={
+  // crafting bases (Normal white bases) -> FB economy-craft look
+  "gear-crafting-bases-ilevel-82":"CRAFT_TOP","gear-exceptional-excellent-quality":"CRAFT_TOP","gear-exceptional-excellent-socketed":"CRAFT_TOP",
+  "gear-crafting-bases-ilevel-81":"CRAFT","gear-exceptional-good-quality":"CRAFT","gear-exceptional-good-socketed":"CRAFT",
+  "jewellery-crafting-bases-excellent-base-types":"CRAFT_TOP","jewellery-crafting-bases-good-base-types":"CRAFT",
+  // "my build" exceptional-quality craftable bases (excellent -> top craft tier)
+  "gear-my-excellent-exceptional":"CRAFT_TOP","gear-my-excellent-exceptional-socketed":"CRAFT_TOP","gear-my-good-exceptional":"CRAFT",
+  // exotic / special-mod gear & jewellery -> FB exotic look
+  "gear-special-gear":"EXOTIC","jewellery-anointed-amulets":"EXOTIC",
+  "jewellery-special-excellent":"EXOTIC","jewellery-special-good":"EXOTIC","jewellery-special-other":"EXOTIC",
+  // rare "my build" gear -> FB rare look (amber for the top tier)
+  "gear-my-rare-t5":"RARE_TOP","gear-my-rare-t3":"RARE","gear-my-lower-tier-rare-t4":"RARE","gear-my-excellent-ilevel":"RARE","gear-my-good-ilevel":"RARE",
+  // magic / normal "my build" gear -> FB flat highlighted backdrop, rarity colour kept
+  "gear-my-magic-t4":"MAGIC","gear-my-magic-t2":"MAGIC","gear-my-lower-tier-magic-t3":"MAGIC",
+  "gear-my-regular-magic":"MAGIC","gear-my-regular-normal":"MAGIC",
+  // unidentified-tier gear -> rare/magic backdrop
+  "gear-unidentified-tier-magic-t5":"RARE","gear-unidentified-tier-magic-t3":"MAGIC","gear-unidentified-tier-low-tier-magic-t4":"MAGIC",
+  // rare jewellery -> FB yellow-bg jewellery look
+  "jewellery-my-rare-t4":"JEWEL_TOP","jewellery-my-rare-t2":"JEWEL","jewellery-my-regular-rare":"JEWEL",
+  "jewellery-my-magic-t4":"JEWEL","jewellery-my-magic-t3":"JEWEL","jewellery-my-excellent-ilevel":"JEWEL","jewellery-my-good-ilevel":"JEWEL",
+  "jewellery-my-regular-magic":"MAGIC","jewellery-my-regular-normal":"MAGIC",
+  "jewellery-unidentified-tier-rare-t5":"JEWEL_TOP","jewellery-unidentified-tier-rare-t3":"JEWEL",
+  "jewellery-unidentified-tier-magic-t5":"JEWEL","jewellery-unidentified-tier-magic-t2":"MAGIC",
+  // jewels -> plain rares get amber (FB gives them 220 220 0 / amber), magic subtle
+  "jewels-my-rare":"RARE_TOP","jewels-my-magic":"MAGIC",
+  // flasks & charms -> FB amber-border / dark-green look
+  "flasks-quality":"FLASK","charms-quality":"FLASK","charms-high-ilevel":"FLASK",
+  "flasks-my-quality":"FLASK","flasks-my-ilevel":"FLASK","flasks-my-regular-magic":"FLASK",
+};
+// Resolve an equipment block -> style, or null. Safety net (like the poe1 tool) so any
+// *shown* gear/jewellery/jewel/flask/charm block we didn't hardcode still gets a match.
+function equipStyle(bid,decl){
+  const baseId=bid.split("/")[0];
+  if(baseId in EQUIP_ID) return EQUIP[EQUIP_ID[baseId]];
+  if(decl==="Show"){
+    if(/^flasks-|^charms-/.test(baseId)) return EQUIP.FLASK;
+    if(/^jewels-/.test(baseId))          return /rare/.test(baseId)?EQUIP.RARE_TOP:EQUIP.MAGIC;
+    if(/^jewellery-/.test(baseId))       return /base/.test(baseId)?EQUIP.CRAFT:(/special|anoint/.test(baseId)?EQUIP.EXOTIC:EQUIP.JEWEL);
+    if(/^gear-/.test(baseId))            return /craft|exceptional/.test(baseId)?EQUIP.CRAFT:(/rare/.test(baseId)?EQUIP.RARE:EQUIP.MAGIC);
+  }
+  return null;
+}
 const TIER_ORDER=["S","A","B","C","D","E","F"];
 const FACET_KEYS={text:"color",border:"color",bg:"color",icon:"icon",font:"font",beam:"beam",sound:"sound"};
 const KEYWORD={text:"SetTextColor",border:"SetBorderColor",bg:"SetBackgroundColor",icon:"MinimapIcon",font:"SetFontSize",beam:"PlayEffect",sound:"PlayAlertSound"};
@@ -351,6 +434,13 @@ function process(text,facets,groups,alignEcon){
     let j=i+1;const body=[];
     while(j<n){const s=lines[j].trim();if(s===""||DECL_RE.test(lines[j])||lines[j].startsWith("#"))break;body.push(lines[j]);j++;}
     const indent=body.length?body[0].match(/^(\s*)/)[1]:"  ";
+    // Equipment: id-mapped, no S..F rung. Handled first; these ids are never in
+    // SPECIAL and their sections are never in SECTION_PALETTE, so nothing overlaps.
+    if(groups.has("equipment")){
+      const es=equipStyle(bid,dm[1]);
+      if(es){const nb=applyStyle(body,indent,es,facets);
+        out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;}
+    }
     let palette=null,rung=null;
     if(bid in SPECIAL){[palette,rung]=SPECIAL[bid];}
     else if(section in SECTION_PALETTE){
@@ -395,6 +485,8 @@ const PV=[
   {key:"waystone",label:"Waystones", chips:[["Rare",WAYSTONE.RARE],["Other",WAYSTONE.OTHER]]},
   {key:"relic",   label:"Trial relics", chips:[["Relic",RELIC.ANY]]},
   {key:"chance",  label:"Chance bases (white bases worth chancing)", chips:[["Wanted",CHANCE.SEARCHING],["Potential",CHANCE.POTENTIAL]]},
+  {key:"equipment",label:"Equipment — gear, jewellery, jewels, flasks & charms",
+   chips:[["Exotic / special",EQUIP.EXOTIC],["Top craft base",EQUIP.CRAFT_TOP],["Craft base",EQUIP.CRAFT],["Top rare",EQUIP.RARE_TOP],["Rare jewellery",EQUIP.JEWEL_TOP],["Flask / charm",EQUIP.FLASK]]},
 ];
 const groupState=new Set(PV.map(g=>g.key)); // all on
 
