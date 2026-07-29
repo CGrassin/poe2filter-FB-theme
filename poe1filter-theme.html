@@ -162,8 +162,29 @@
   .foot + .foot{margin-top:5px}
   .foot b{color:var(--ink-dim);font-weight:500}
 
+  /* which-game switcher */
+  .gameswitch{display:flex;align-items:center;justify-content:center;gap:8px 16px;flex-wrap:wrap;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--edge);border-radius:12px;box-shadow:var(--shadow);
+    padding:11px 14px;margin:0 0 30px}
+  .gs-label{font-family:"Cinzel",serif;font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--gold-dim)}
+  .gs-tabs{display:flex;gap:5px;background:rgba(0,0,0,.3);
+    border:1px solid var(--edge-soft);border-radius:999px;padding:4px}
+  .gs-tab{font-family:"Cinzel",serif;font-size:13px;letter-spacing:.04em;white-space:nowrap;
+    padding:7px 17px;border-radius:999px;border:1px solid transparent;color:var(--ink-dim);
+    text-decoration:none;transition:color .15s,background .15s,border-color .15s}
+  .gs-tab.is-active{background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#231a06;font-weight:600;box-shadow:0 6px 16px -9px rgba(201,164,74,.85)}
+  a.gs-tab:hover{color:var(--gold-bright);border-color:var(--gold-dim);background:rgba(201,164,74,.08)}
+  a.gs-tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .gs-tab .gs-arrow{opacity:.65;margin-left:7px;font-family:"Spectral",serif}
+
+
   @media (max-width:520px){
     .card{padding:20px 16px}
+    .gs-label{flex:0 0 100%;text-align:center}
+    .gs-tab{font-size:12px;padding:7px 13px}
     .info .tip{right:-6px;left:auto;width:min(248px,calc(100vw - 64px))}
     .info .tip::after{right:9px;left:auto}
   }
@@ -172,6 +193,14 @@
 </head>
 <body>
 <div class="wrap">
+  <nav class="gameswitch" aria-label="Choose which game this tool is for">
+    <span class="gs-label">Filter tool for</span>
+    <span class="gs-tabs">
+    <span class="gs-tab is-active" aria-current="page">Path of Exile 1</span>
+    <a class="gs-tab" href="poe2filter-theme.html">Path of Exile 2<span class="gs-arrow" aria-hidden="true">&rarr;</span></a>
+    </span>
+  </nav>
+
   <p class="eyebrow">poe1filter FilterBlade Theme</p>
   <h1>Repaint your poe1filter<br>in <span class="accent">FilterBlade</span> colors</h1>
   <p class="lede">This tool takes a filter built on <a href="https://poe1filter.com" target="_blank" rel="noopener">poe1filter.com</a>
@@ -221,6 +250,7 @@
   <p class="foot">Runs in your browser, your filter is not uploaded. Last updated on 26.07.2026.
     Made by <a href="https://charlesgrassin.com" target="_blank" rel="noopener">Charles Grassin</a>.</p>
   <p class="foot">Built on the work of <a href="https://poe1filter.com" target="_blank" rel="noopener">poe1filter</a> and <a href="https://www.filterblade.xyz" target="_blank" rel="noopener">FilterBlade</a> (by <a href="https://github.com/NeverSinkDev" target="_blank" rel="noopener">NeverSink</a>); huge thanks to their developers.</p>
+  <p class="foot">Open source, <a class="gh" href="https://github.com/CGrassin/poe2filter-FB-theme" target="_blank" rel="noopener">view on GitHub</a>.</p>
 </div>
 
 <script>
