@@ -109,6 +109,22 @@
   .switch input:focus-visible ~ .track{outline:2px solid var(--gold);outline-offset:2px}
   .opt .lab{flex:1;display:flex;flex-direction:column;gap:4px}
   .opt .lab .t{color:var(--ink);font-size:15px}
+  .opt .lab .d{color:var(--ink-faint);font-size:12.5px;line-height:1.45}
+
+  /* minimum-font-size picker */
+  .sizepick{display:flex;gap:4px;flex:none;background:rgba(0,0,0,.3);
+    border:1px solid var(--edge-soft);border-radius:999px;padding:3px;
+    transition:opacity .18s}
+  .sizepick .sz{font-family:"Cinzel",serif;font-size:12.5px;letter-spacing:.02em;
+    background:none;border:1px solid transparent;color:var(--ink-dim);
+    padding:5px 11px;border-radius:999px;cursor:pointer;line-height:1;
+    transition:color .15s,background .15s,border-color .15s}
+  .sizepick .sz:hover{color:var(--gold-bright);border-color:var(--gold-dim);background:rgba(201,164,74,.08)}
+  .sizepick .sz[aria-checked="true"]{background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#231a06;font-weight:600}
+  .sizepick .sz:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .opt.is-off .sizepick{opacity:.38;pointer-events:none}
+  .opt.is-off .lab .d{opacity:.6}
   .info{flex:none;position:relative;width:18px;height:18px;border-radius:50%;
     border:1px solid var(--gold-dim);color:var(--gold);font-size:11px;
     display:grid;place-items:center;cursor:help;font-family:"Cinzel",serif;
@@ -183,6 +199,9 @@
 
   @media (max-width:520px){
     .card{padding:20px 16px}
+    .opt{flex-wrap:wrap}
+    .sizepick{order:3;width:100%;justify-content:space-between}
+    .sizepick .sz{flex:1;text-align:center}
     .gs-label{flex:0 0 100%;text-align:center}
     .gs-tab{font-size:12px;padding:7px 13px}
     .info .tip{right:-6px;left:auto;width:min(248px,calc(100vw - 64px))}
@@ -219,7 +238,7 @@
 
   <div class="card">
     <div class="step"><span class="num">2</span><h2>What to repaint</h2></div>
-    <p class="step-sub">Equipment (weapons, armour, jewellery, flasks &amp; charms) is <b>not</b> changed. Only the item categories below are restyled. Turn any of them off to keep the poe2filter styling.</p>
+    <p class="step-sub">Every category below is restyled to FilterBlade's colours. Turn any of them off to keep the poe2filter styling for that category.</p>
     <div class="opts" id="groups"></div>
 
     <details class="adv">
@@ -227,6 +246,21 @@
       <p class="step-sub adv-sub">Anything you leave off keeps your poe2filter setting.</p>
       <div class="opts" id="opts"></div>
       <div class="opts" id="align"></div>
+
+      <div class="opts">
+        <div class="opt" id="floorRow">
+          <span class="switch">
+            <input type="checkbox" id="floorOn" checked aria-label="Minimum font size">
+            <span class="track"></span><span class="thumb"></span>
+          </span>
+          <label class="lab" for="floorOn">
+            <span class="t">Minimum font size</span>
+            <span class="d">Sets the minimum font size for drops.</span>
+          </label>
+          <span class="sizepick" id="floorSizes" role="radiogroup" aria-label="Minimum font size value"></span>
+          <button type="button" class="info" aria-label="About minimum font size">?<span class="tip">This setting increases the font size of all drops that are not otherwise restyled by the filter. FilterBlade tier sizes still win where they apply, so the hierarchy is kept. Nothing is hidden or unhidden.</span></button>
+        </div>
+      </div>
     </details>
   </div>
 
@@ -442,8 +476,93 @@ function applyStyle(body,indent,style,facets){
   }
   return kept.filter((_,i)=>!remove.has(i));
 }
-function process(text,facets,groups,alignEcon){
-  const lines=text.split("\n"),out=[],log=[];let section=null,i=0,themed=0,total=0;const n=lines.length;
+/* ---- minimum font size ----
+   poe2filter writes SetFontSize on most of its shown blocks, but anything it
+   doesn't style is drawn by the game at its own default of 32 — tiny beside
+   FilterBlade, which floors shown items at 35 and puts most of them at 40-45.
+   Two pieces fix that: raise sizes below the floor on blocks that have one (or
+   add one where it's missing), and append a catch-all so drops that match no
+   rule at all still get a size. */
+const GAME_DEFAULT_FONT=32;
+const FLOOR_MARK="### >>> Minimum font size — added by the poe2filter FilterBlade theme tool <<<";
+const FONT_RE=/^(\s*)SetFontSize\s+(\d+)\s*$/;
+
+function applyFloor(body,indent,floor){
+  let seen=false,changed=false;
+  const out=body.map(ln=>{
+    const m=FONT_RE.exec(ln);
+    if(!m)return ln;
+    seen=true;
+    if(+m[2]<floor){changed=true;return m[1]+"SetFontSize "+floor;}
+    return ln;
+  });
+  if(!seen){out.push(indent+"SetFontSize "+floor);changed=true;}
+  return {body:out,changed};
+}
+
+// Trailing catch-all. Items reaching it were already being shown by the game
+// (nothing above matched them), so this changes their size and nothing else.
+function safetyNet(floor){
+  const uniq=Math.max(floor,45), rare=Math.min(45,floor+2);
+  return "\n\n"
+    +"#######################################################\n"
+    +FLOOR_MARK+"\n"
+    +"### Anything no rule above matched is drawn by the game at its own default\n"
+    +"### size ("+GAME_DEFAULT_FONT+"), which reads as tiny next to the rest of the filter. These\n"
+    +"### blocks only set a font size: no colours, no icons, no sounds. An item\n"
+    +"### that reaches them was already being shown, so nothing is hidden or\n"
+    +"### unhidden and no tiering changes. Delete this section to undo it.\n"
+    +"#######################################################\n\n"
+    +"Show # Unstyled Uniques (theme-floor-unique)\n"
+    +"  Rarity Unique\n"
+    +"  SetFontSize "+uniq+"\n\n"
+    +"Show # Unstyled Rares (theme-floor-rare)\n"
+    +"  Rarity Rare\n"
+    +"  SetFontSize "+rare+"\n\n"
+    +"Show # Unstyled Magic Items (theme-floor-magic)\n"
+    +"  Rarity Magic\n"
+    +"  SetFontSize "+floor+"\n\n"
+    +"Show # Everything Else (theme-floor-remaining)\n"
+    +"  SetFontSize "+floor+"\n";
+}
+// Re-running the tool on its own output shouldn't stack safety nets.
+function stripSafetyNet(text){
+  const at=text.indexOf(FLOOR_MARK);
+  if(at<0)return text;
+  // Match the "\n\n###" separator that opens the appended block, not the mark's own
+  // "\n###" line — otherwise the separator comment survives and re-runs accumulate it.
+  // (This is the one intentional fix over the poe1 original, whose strip left that line.)
+  const head=text.lastIndexOf("\n\n###",at);
+  return text.slice(0,head<0?at:head).replace(/\s+$/,"");
+}
+
+// Resolve a block -> its FilterBlade style object, or null. Groups gate each family.
+function resolveStyle(section,name,bid,decl,groups,alignEcon,log){
+  if(groups.has("uniques") && bid in UNIQ_ID) return UNIQ[UNIQ_ID[bid]];
+  if(groups.has("equipment")){const es=equipStyle(bid,decl);if(es)return es;}
+  let palette=null,rung=null;
+  if(bid in SPECIAL){[palette,rung]=SPECIAL[bid];}
+  else if(section in SECTION_PALETTE){
+    palette=SECTION_PALETTE[section];
+    const tm=TIER_RE.exec(name);
+    if(tm){rung=tm[1];
+      if(name.startsWith("Large Stacks of")||bid.endsWith("-large-stacks"))rung=bump(rung,2);
+      else if(name.startsWith("Small Stacks of")||bid.endsWith("-small-stacks"))rung=bump(rung,1);}
+    else if(log)log.push(name+" ("+section+")");
+  }
+  if(palette&&rung&&groups.has(palette)){
+    let r=rung;if(alignEcon&&palette==="economy")r=ECON_ALIGN[r]||r;
+    if(palette==="waystone")return WAYSTONE[r];
+    if(palette==="relic")return RELIC[r];
+    if(palette==="chance")return CHANCE[r];
+    return resolve(LADDERS[palette],r);
+  }
+  return null;
+}
+
+function process(text,facets,groups,alignEcon,floor){
+  const lines=stripSafetyNet(text).split("\n"),out=[],log=[];
+  let section=null,i=0,themed=0,total=0,floored=0;const n=lines.length;
   while(i<n){
     const ln=lines[i];
     const sm=SECTION_RE.exec(ln);if(sm&&!sm[1].startsWith("#"))section=sm[1];
@@ -454,37 +573,23 @@ function process(text,facets,groups,alignEcon){
     let j=i+1;const body=[];
     while(j<n){const s=lines[j].trim();if(s===""||DECL_RE.test(lines[j])||lines[j].startsWith("#"))break;body.push(lines[j]);j++;}
     const indent=body.length?body[0].match(/^(\s*)/)[1]:"  ";
-    // Uniques: id-mapped, no S..F rung. ids look like "uniques-excellent" (no suffix).
-    if(groups.has("uniques") && bid in UNIQ_ID){
-      const nb=applyStyle(body,indent,UNIQ[UNIQ_ID[bid]],facets);
-      out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;
+    let nb=body,raised=false;
+    // Floor first, theme second: a FilterBlade tier size always overwrites the
+    // floor, so muted tiers keep their smaller size and the floor only ever
+    // fills in blocks the theme leaves alone.
+    if(floor&&dm[1]==="Show"){const r=applyFloor(nb,indent,floor);nb=r.body;raised=r.changed;}
+    const style=resolveStyle(section,name,bid,dm[1],groups,alignEcon,log);
+    if(style){
+      nb=applyStyle(nb,indent,style,facets); themed++;
+      // The theme just set its own size, so the floor didn't decide this one.
+      if(style.font&&facets.has("font"))raised=false;
     }
-    // Equipment: id-mapped, no S..F rung. Handled first; these ids are never in
-    // SPECIAL and their sections are never in SECTION_PALETTE, so nothing overlaps.
-    if(groups.has("equipment")){
-      const es=equipStyle(bid,dm[1]);
-      if(es){const nb=applyStyle(body,indent,es,facets);
-        out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;}
-    }
-    let palette=null,rung=null;
-    if(bid in SPECIAL){[palette,rung]=SPECIAL[bid];}
-    else if(section in SECTION_PALETTE){
-      palette=SECTION_PALETTE[section];
-      const tm=TIER_RE.exec(name);
-      if(tm){rung=tm[1];
-        if(name.startsWith("Large Stacks of")||bid.endsWith("-large-stacks"))rung=bump(rung,2);
-        else if(name.startsWith("Small Stacks of")||bid.endsWith("-small-stacks"))rung=bump(rung,1);}
-      else log.push(name+" ("+section+")");
-    }
-    if(palette&&rung&&groups.has(palette)){
-      let r=rung;if(alignEcon&&palette==="economy")r=ECON_ALIGN[r]||r;
-      let style;if(palette==="waystone")style=WAYSTONE[r];else if(palette==="relic")style=RELIC[r];else if(palette==="chance")style=CHANCE[r];else style=resolve(LADDERS[palette],r);
-      const nb=applyStyle(body,indent,style,facets);
-      out.push(ln);for(const b of nb)out.push(b);i=j;themed++;continue;
-    }
-    out.push(ln);i++;
+    if(raised)floored++;
+    out.push(ln);for(const b of nb)out.push(b);i=j;
   }
-  return {text:out.join("\n"),log,themed,total};
+  let res=out.join("\n");
+  if(floor)res+=safetyNet(floor);
+  return {text:res,log,themed,total,floored};
 }
 
 /* ============================ UI ============================ */
@@ -511,7 +616,7 @@ const PV=[
   {key:"waystone",label:"Waystones", chips:[["Rare",WAYSTONE.RARE],["Other",WAYSTONE.OTHER]]},
   {key:"relic",   label:"Trial relics", chips:[["Relic",RELIC.ANY]]},
   {key:"chance",  label:"Chance bases (white bases worth chancing)", chips:[["Wanted",CHANCE.SEARCHING],["Potential",CHANCE.POTENTIAL]]},
-  {key:"equipment",label:"Equipment — gear, jewellery, jewels, flasks & charms",
+  {key:"equipment",label:"Equipment (gear, jewellery, jewels, flasks & charms)",
    chips:[["Exotic / special",EQUIP.EXOTIC],["Top craft base",EQUIP.CRAFT_TOP],["Craft base",EQUIP.CRAFT],["Top rare",EQUIP.RARE_TOP],["Rare jewellery",EQUIP.JEWEL_TOP],["Flask / charm",EQUIP.FLASK]]},
 ];
 const groupState=new Set(PV.map(g=>g.key)); // all on
@@ -565,6 +670,41 @@ $("#align").innerHTML=`
     <button type="button" class="info" aria-label="About aligning currency tiers">?<span class="tip">Poe2filter's currency tiers sit one step brighter than FilterBlade's. This shifts currency down by one rung from C onward (B keeps its own color, and FilterBlade's C color is skipped). Only affects the currency/economy category. Turn off for a straight 1:1 tier match.</span></button>
   </label>`;
 $("#alignCb").addEventListener("change",e=>{alignEcon=e.target.checked;renderPreview();});
+
+/* ---- minimum font size control ---- */
+// 35 is FilterBlade's floor for shown items; a floor of 38 sits just above it,
+// close to the FilterBlade feel without pushing everything up to 40+.
+const FLOOR_SIZES=[34,36,38,40,42], FLOOR_DEFAULT=38;
+let floorSize=FLOOR_DEFAULT, floorOn=true;
+const floorRow=$("#floorRow"), floorBox=$("#floorOn"), floorPick=$("#floorSizes");
+
+floorPick.innerHTML=FLOOR_SIZES.map(s=>
+  `<button type="button" class="sz" role="radio" data-size="${s}"
+    aria-checked="${s===FLOOR_DEFAULT}" tabindex="${s===FLOOR_DEFAULT?0:-1}"
+    aria-label="Size ${s}">${s}</button>`).join("");
+const szBtns=[...floorPick.querySelectorAll(".sz")];
+function setFloorSize(s){
+  floorSize=s;
+  szBtns.forEach(b=>{const on=+b.dataset.size===s;
+    b.setAttribute("aria-checked",on);b.tabIndex=on?0:-1;});
+}
+szBtns.forEach(b=>b.addEventListener("click",()=>setFloorSize(+b.dataset.size)));
+floorPick.addEventListener("keydown",e=>{
+  const i=szBtns.indexOf(document.activeElement);if(i<0)return;
+  let t=null;
+  if(e.key==="ArrowRight"||e.key==="ArrowDown")t=(i+1)%szBtns.length;
+  else if(e.key==="ArrowLeft"||e.key==="ArrowUp")t=(i-1+szBtns.length)%szBtns.length;
+  else if(e.key==="Home")t=0;
+  else if(e.key==="End")t=szBtns.length-1;
+  if(t===null)return;
+  e.preventDefault();setFloorSize(+szBtns[t].dataset.size);szBtns[t].focus();
+});
+floorBox.addEventListener("change",()=>{
+  floorOn=floorBox.checked;
+  floorRow.classList.toggle("is-off",!floorOn);
+  floorPick.setAttribute("aria-disabled",String(!floorOn));
+  szBtns.forEach(b=>b.tabIndex=floorOn&&b.getAttribute("aria-checked")==="true"?0:-1);
+});
 
 /* ---- static palette preview (just the chips) ---- */
 function rgba(s){const p=s.split(/\s+/).map(Number);const a=p.length>3?p[3]/255:1;return `rgba(${p[0]},${p[1]},${p[2]},${a})`;}
@@ -669,9 +809,10 @@ drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)readFile(f
 /* ---- apply & download ---- */
 go.addEventListener("click",()=>{
   if(loadedText==null)return;
-  if(groupState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>No categories selected.</b> Turn on at least one category to repaint.";return;}
-  if(facetState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>Nothing to copy.</b> Open Advanced and turn on at least one part of the look.";return;}
-  const res=process(loadedText,facetState,groupState,alignEcon);
+  const floor=floorOn?floorSize:null;
+  if(!floor&&groupState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>No categories selected.</b> Turn on at least one category to repaint.";return;}
+  if(!floor&&facetState.size===0){status.className="status";status.innerHTML="<b style='color:var(--bad)'>Nothing to copy.</b> Open Advanced and turn on at least one part of the look.";return;}
+  const res=process(loadedText,facetState,groupState,alignEcon,floor);
   const blob=new Blob([res.text],{type:"text/plain"});
   const url=URL.createObjectURL(blob);
   const base=(loadedName||"filter").replace(/\.(filter|txt)$/i,"");
@@ -681,6 +822,7 @@ go.addEventListener("click",()=>{
   status.className="status ok";
   status.innerHTML=`Done — repainted <b>${res.themed}</b> of ${res.total} blocks. Downloaded as <b>${base}-filterblade.filter</b>.`
     +`<span class="note">Applied: ${facetList}.${alignEcon?" Currency tiers aligned to FilterBlade (C skipped).":""}`
+    +(floor?` Minimum font size ${floor}: enlarged <b>${res.floored}</b> block(s), plus a catch-all for drops no rule matched.`:"")
     +(res.log.length?` ${res.log.length} block(s) had no tier and were left untouched.`:"")+`</span>`;
 });
 </script>
