@@ -16,6 +16,8 @@ Two single-page tools that take a [poe1filter.com](https://poe1filter.com) or [p
 
 > Works only with poe1filter.com / poe2filter.com output, since it keys off those generators' structure. These are not general filter converters.
 
+![PoE2 sample output, strict filter.](./screenshots/poe2_example.png)
+
 ## License
 
 MIT © Charles Grassin
